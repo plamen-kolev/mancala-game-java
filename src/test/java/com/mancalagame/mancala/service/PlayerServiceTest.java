@@ -7,8 +7,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PlayerServiceTest {
 
@@ -41,5 +43,23 @@ class PlayerServiceTest {
 
         assertThat(pits.stream().filter(pit -> pit.getType() != PitType.BIG).allMatch(pit -> pit.equals(INITIAL_STONES_PER_PIT)));
         assertThat(pits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get().getNumberOfStones() == 0);
+    }
+
+    @Test
+    public void playerShouldBeAbleToMakeAMove() {
+        List<PitDAO> pits = boardService.getBoard(Players.PLAYER2);
+        boardService.play(pits.get(0));
+        List<PitDAO> updatedPits = boardService.getBoard(Players.PLAYER2);
+
+        // first small pit is empty
+        assertThat(updatedPits.get(0).getNumberOfStones() == 0);
+
+        // rest have an extra stone in them
+        assertThat(updatedPits.stream().filter(pit -> pit.getType() == PitType.SMALL).allMatch(pit -> pit.getNumberOfStones() == 7));
+
+        // and last pit has 1 stone
+        assertThat(updatedPits.stream().filter(pit -> pit.getType() == PitType.BIG).allMatch(pit -> pit.getNumberOfStones() == 0));
+
+
     }
 }
