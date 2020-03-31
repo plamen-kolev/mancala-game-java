@@ -34,9 +34,13 @@ public class BoardService {
 
     public List<PitDAO> getBoard(Player player) {
         return board.stream()
-                .filter(pit -> player.equals(pit.getOwnership()))
+                .filter(pit -> player.equals(pit.getOwner()))
                 .map(pit -> clonePit(pit)
                 ).collect(Collectors.toList());
+    }
+
+    public void reset() {
+        initializeBoard();
     }
 
     public List<PitDAO> getBoard() {
@@ -49,18 +53,18 @@ public class BoardService {
         int pitIndex = findIndexOfPit(pitId, current_player);
         PitDAO currentPit = board.get(pitIndex);
 
-        int movesToMake = currentPit.getNumberOfStones();
-        currentPit.setNumberOfStones(0);
+        int movesToMake = currentPit.getStones();
+        currentPit.setStones(0);
         while (movesToMake != 0) {
             PitDAO nextPit = board.get((pitIndex + 1) % TOTAL_PIT_INDEXES);
 
             log.info(nextPit.toString());
-            if(nextPit.getType() == PitType.BIG && currentPit.getOwnership() != current_player) {
+            if(nextPit.getType() == PitType.BIG && currentPit.getOwner() != current_player) {
             } else {
-                nextPit.setNumberOfStones(nextPit.getNumberOfStones() + 1);
+                nextPit.setStones(nextPit.getStones() + 1);
                 --movesToMake;
 
-                if(movesToMake == 0 && this.hasStonesLeft(current_player)) {
+                if(movesToMake == 0 && this.hasStonesLeft(current_player) && PitType.BIG.equals(nextPit)) {
                     return GameState.EXTRA_TURN;
                 }
 
@@ -82,10 +86,10 @@ public class BoardService {
         for (int i = 0; i < board.size(); i++) {
             PitDAO pit = board.get(i);
             if (pit.getId() == id){
-                if (pit.getOwnership() != current_player || PitType.BIG.equals(pit.getType())) {
+                if (pit.getOwner() != current_player || PitType.BIG.equals(pit.getType())) {
                     throw (new IllegalPlayerMoveException(String.format("You can't use pit with id '%s', this belongs to the other player or is the big pit", id)));
                 }
-                if(pit.getNumberOfStones() == 0) {
+                if(pit.getStones() == 0) {
                     throw (new IllegalPlayerMoveException("Cannot pick from an empty pit"));
                 }
                 return i;
@@ -97,7 +101,7 @@ public class BoardService {
     public boolean hasStonesLeft(Player player) {
         return getBoard(player).stream()
                 .filter(pit -> PitType.SMALL.equals(pit.getType()))
-                .map(pit -> pit.getNumberOfStones())
+                .map(pit -> pit.getStones())
                 .reduce(Integer::sum)
                 .get()  > 0;
 
@@ -105,8 +109,8 @@ public class BoardService {
 
     private PitDAO clonePit(PitDAO pit) {
         return PitDAO.builder()
-                .numberOfStones(pit.getNumberOfStones())
-                .ownership(pit.getOwnership())
+                .stones(pit.getStones())
+                .owner(pit.getOwner())
                 .id(pit.getId())
                 .type(pit.getType())
                 .build();
@@ -117,16 +121,16 @@ public class BoardService {
         IntStream.range(0, NUMBER_OF_PITS_PER_PLAYER)
                 .forEach( i -> board.add(
                         PitDAO.builder()
-                                .numberOfStones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
-                                .ownership(PLAYER1)
+                                .stones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
+                                .owner(PLAYER1)
                                 .id(i)
                                 .type(PitType.SMALL)
                                 .build()
                 ));
         board.add(
                 PitDAO.builder()
-                        .numberOfStones(INITIAL_STONES_IN_BIG_PIT)
-                        .ownership(PLAYER1)
+                        .stones(INITIAL_STONES_IN_BIG_PIT)
+                        .owner(PLAYER1)
                         .id(6)
                         .type(PitType.BIG)
                         .build()
@@ -135,16 +139,16 @@ public class BoardService {
         IntStream.range(0, NUMBER_OF_PITS_PER_PLAYER)
                 .forEach( i -> board.add(
                         PitDAO.builder()
-                                .numberOfStones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
-                                .ownership(PLAYER2)
+                                .stones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
+                                .owner(PLAYER2)
                                 .type(PitType.SMALL)
                                 .id(7+i)
                                 .build()
                 ));
         board.add(
                 PitDAO.builder()
-                        .numberOfStones(INITIAL_STONES_IN_BIG_PIT)
-                        .ownership(PLAYER2)
+                        .stones(INITIAL_STONES_IN_BIG_PIT)
+                        .owner(PLAYER2)
                         .type(PitType.BIG)
                         .id(13)
                         .build()

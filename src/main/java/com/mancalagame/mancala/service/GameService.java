@@ -4,12 +4,14 @@ import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.enums.Player;
 import com.mancalagame.mancala.model.PitDAO;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Log
 public class GameService {
 
     private PlayerTurnService turnService;
@@ -31,19 +33,25 @@ public class GameService {
         return boardService.getBoard(player);
     }
 
+    public void reset() {
+        boardService.reset();
+        turnService.reset();
+    }
     public synchronized GameState play(int pitId) throws IllegalPlayerMoveException {
         if (gameWon) {
             return GameState.GAME_WON;
         }
 
         Player currentPlayer = turnService.getCurrentPlayer();
-        GameState state = this.boardService.play(pitId, currentPlayer);
+        GameState state = boardService.play(pitId, currentPlayer);
+        log.info(String.format("Game state: ", state));
         if(!GameState.EXTRA_TURN.equals(state)) {
-            this.turnService.changeTurn();
+            turnService.changeTurn();
         }
         if(GameState.GAME_WON.equals(state)) {
             gameWon = true;
         }
+
         return state;
     }
 }

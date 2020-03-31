@@ -14,7 +14,7 @@ import lombok.ToString;
 public class PitDAO {
     private PitType type;
     private int id;
-    private int numberOfStones;
-    private Player ownership;
+    private int stones;
+    private Player owner;
 }
 

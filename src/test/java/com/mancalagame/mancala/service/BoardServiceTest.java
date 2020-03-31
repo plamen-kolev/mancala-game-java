@@ -35,8 +35,8 @@ class BoardServiceTest {
         // Last pit is the big pit
         assertThat(pits.get(6).getType(), is(PitType.BIG));
 
-        assertTrue(pits.stream().filter(pit -> pit.getType() != PitType.BIG).allMatch(pit -> pit.getNumberOfStones() == INITIAL_STONES_PER_PIT));
-        assertTrue(pits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get().getNumberOfStones() == 0);
+        assertTrue(pits.stream().filter(pit -> pit.getType() != PitType.BIG).allMatch(pit -> pit.getStones() == INITIAL_STONES_PER_PIT));
+        assertTrue(pits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get().getStones() == 0);
     }
 
     @Test
@@ -47,8 +47,8 @@ class BoardServiceTest {
         // Last Pit is the big pit
         assertThat(pits.get(6).getType(), is(PitType.BIG));
 
-        assertTrue(pits.stream().filter(pit -> pit.getType() != PitType.BIG).allMatch(pit -> pit.getNumberOfStones() == INITIAL_STONES_PER_PIT));
-        assertTrue(pits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get().getNumberOfStones() == 0);
+        assertTrue(pits.stream().filter(pit -> pit.getType() != PitType.BIG).allMatch(pit -> pit.getStones() == INITIAL_STONES_PER_PIT));
+        assertTrue(pits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get().getStones() == 0);
     }
 
     @Test
@@ -59,14 +59,14 @@ class BoardServiceTest {
         List<PitDAO> updatedPits = boardService.getBoard(CURRENT_PLAYER);
 
         // first small pit is empty
-        assertThat(updatedPits.get(0).getNumberOfStones(), is(0));
+        assertThat(updatedPits.get(0).getStones(), is(0));
 
         // rest have an extra stone in them (rest meaning 5)
-        assertThat(updatedPits.stream().filter(pit -> pit.getType() == PitType.SMALL && pit.getNumberOfStones() == 7).toArray().length, is(5));
+        assertThat(updatedPits.stream().filter(pit -> pit.getType() == PitType.SMALL && pit.getStones() == 7).toArray().length, is(5));
 
         // and last pit has 1 stone
         PitDAO bigPitOfPlayer = updatedPits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
-        assertThat(bigPitOfPlayer.getNumberOfStones(), is(1));
+        assertThat(bigPitOfPlayer.getStones(), is(1));
     }
 
     @Test
@@ -132,9 +132,9 @@ class BoardServiceTest {
     public void playerCannotModifyTheBoard() {
         int modifiedValue = 1000;
         List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
-        pits.get(0).setNumberOfStones(modifiedValue);
+        pits.get(0).setStones(modifiedValue);
         List<PitDAO> refetchedPits = boardService.getBoard(CURRENT_PLAYER);
-        assertThat(refetchedPits.get(0).getNumberOfStones(), not(modifiedValue));
+        assertThat(refetchedPits.get(0).getStones(), not(modifiedValue));
     }
 
     @Test
