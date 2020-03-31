@@ -1,16 +1,13 @@
 package com.mancalagame.mancala.service;
 
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
-import com.mancalagame.mancala.exceptions.InvalidItemAccessException;
 import com.mancalagame.mancala.model.PitDAO;
 import com.mancalagame.mancala.model.PitType;
 import com.mancalagame.mancala.model.Players;
 import org.springframework.stereotype.Service;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,7 +31,7 @@ public class BoardService {
         return board.stream().filter(pit -> player.equals(pit.getOwnership())).collect(Collectors.toList());
     }
 
-    public void play(int pitId, Players current_player) throws InvalidItemAccessException, IllegalPlayerMoveException {
+    public void play(int pitId, Players current_player) throws IllegalPlayerMoveException {
         int pitIndex = findIndexOfPit(pitId, current_player);
 
         PitDAO currentPit = board.get(pitIndex);
@@ -55,7 +52,7 @@ public class BoardService {
 
     }
 
-    private int findIndexOfPit(int id, Players current_player) throws InvalidItemAccessException, IllegalPlayerMoveException {
+    private int findIndexOfPit(int id, Players current_player) throws IllegalPlayerMoveException {
 
         for (int i = 0; i < board.size(); i++) {
             PitDAO pit = board.get(i);
@@ -63,10 +60,13 @@ public class BoardService {
                 if (pit.getOwnership() != current_player || PitType.BIG.equals(pit.getType())) {
                     throw (new IllegalPlayerMoveException(String.format("You can't use pit with id '%s', this belongs to the other player or is the big pit", id)));
                 }
+                if(pit.getNumberOfStones() == 0) {
+                    throw (new IllegalPlayerMoveException("Cannot pick from an empty pit"));
+                }
                 return i;
             }
         }
-        throw (new InvalidItemAccessException(String.format("Trying to play pit with id '%s', but we couldn't find it", id)));
+        throw (new IllegalPlayerMoveException(String.format("Trying to play pit with id '%s', but we couldn't find it", id)));
     }
 
     private void initializeBoard() {
