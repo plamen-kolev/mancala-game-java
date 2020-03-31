@@ -3,21 +3,21 @@ package com.mancalagame.mancala.service;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.model.PitDAO;
 import com.mancalagame.mancala.model.PitType;
-import com.mancalagame.mancala.model.Players;
+import com.mancalagame.mancala.model.Player;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.mancalagame.mancala.model.Players.PLAYER1;
-import static com.mancalagame.mancala.model.Players.PLAYER2;
+import static com.mancalagame.mancala.model.Player.PLAYER1;
+import static com.mancalagame.mancala.model.Player.PLAYER2;
 
 @Service
 public class BoardService {
+
     private LinkedList<PitDAO> board;
     private static final int NUMBER_OF_PITS_PER_PLAYER = 6;
     private static final int INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT = 6;
@@ -25,11 +25,13 @@ public class BoardService {
     private static final int TOTAL_PIT_INDEXES = 13;
 
 
+
+    @Autowired
     public BoardService() {
         initializeBoard();
     }
 
-    public List<PitDAO> getBoard(Players player) {
+    public List<PitDAO> getBoard(Player player) {
         return board.stream()
                 .filter(pit -> player.equals(pit.getOwnership()))
                 .map(pit ->
@@ -42,7 +44,7 @@ public class BoardService {
                 ).collect(Collectors.toList());
     }
 
-    public void play(int pitId, Players current_player) throws IllegalPlayerMoveException {
+    public void play(int pitId, Player current_player) throws IllegalPlayerMoveException {
         int pitIndex = findIndexOfPit(pitId, current_player);
 
         PitDAO currentPit = board.get(pitIndex);
@@ -63,7 +65,7 @@ public class BoardService {
 
     }
 
-    private int findIndexOfPit(int id, Players current_player) throws IllegalPlayerMoveException {
+    private int findIndexOfPit(int id, Player current_player) throws IllegalPlayerMoveException {
 
         for (int i = 0; i < board.size(); i++) {
             PitDAO pit = board.get(i);

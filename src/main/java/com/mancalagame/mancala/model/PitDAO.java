@@ -13,6 +13,6 @@ public class PitDAO {
     private PitType type;
     private int id;
     private int numberOfStones;
-    private Players ownership;
+    private Player ownership;
 }
 

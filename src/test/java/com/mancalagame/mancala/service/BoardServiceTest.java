@@ -3,7 +3,7 @@ package com.mancalagame.mancala.service;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.model.PitDAO;
 import com.mancalagame.mancala.model.PitType;
-import com.mancalagame.mancala.model.Players;
+import com.mancalagame.mancala.model.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,8 +18,8 @@ class BoardServiceTest {
     private BoardService boardService;
     private static final int INITIAL_STONES_PER_PIT = 6;
     private static final int PIT_ID_NOT_IN_DATASET = -1;
-    private static final Players CURRENT_PLAYER = Players.PLAYER2;
-    private static final Players OTHER_PLAYER = Players.PLAYER1;
+    private static final Player CURRENT_PLAYER = Player.PLAYER2;
+    private static final Player OTHER_PLAYER = Player.PLAYER1;
 
     @BeforeEach
     public void setup() {
