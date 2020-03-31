@@ -22,7 +22,7 @@ public class BoardService {
     private static final int NUMBER_OF_PITS_PER_PLAYER = 6;
     private static final int INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT = 6;
     private static final int INITIAL_STONES_IN_BIG_PIT = 0;
-    private static final int TOTAL_PIT_INDEXES = 13;
+    private static final int TOTAL_PIT_INDEXES = 14;
 
 
 
@@ -46,7 +46,7 @@ public class BoardService {
 
     public void play(int pitId, Player current_player) throws IllegalPlayerMoveException {
         int pitIndex = findIndexOfPit(pitId, current_player);
-
+        System.out.println("PIT INDEX"+ pitIndex);
         PitDAO currentPit = board.get(pitIndex);
 
         int movesToMake = currentPit.getNumberOfStones();
@@ -80,6 +80,15 @@ public class BoardService {
             }
         }
         throw (new IllegalPlayerMoveException(String.format("Trying to play pit with id '%s', but we couldn't find it", id)));
+    }
+
+    public boolean hasStonesLeft(Player player) {
+        return getBoard(player).stream()
+                .filter(pit -> PitType.SMALL.equals(pit.getType()))
+                .map(pit -> pit.getNumberOfStones())
+                .reduce(Integer::sum)
+                .get()  > 0;
+
     }
 
     private void initializeBoard() {

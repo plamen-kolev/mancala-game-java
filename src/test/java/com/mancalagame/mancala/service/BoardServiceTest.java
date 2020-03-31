@@ -64,7 +64,8 @@ class BoardServiceTest {
         assertThat(updatedPits.stream().filter(pit -> pit.getType() == PitType.SMALL && pit.getNumberOfStones() == 7).toArray().length, is(5));
 
         // and last pit has 1 stone
-        assertThat(updatedPits.stream().filter(pit -> pit.getType() == PitType.BIG && pit.getOwnership() == CURRENT_PLAYER).findFirst().get().getNumberOfStones(), is(0));
+        PitDAO bigPitOfPlayer = updatedPits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
+        assertThat(bigPitOfPlayer.getNumberOfStones(), is(1));
     }
 
     @Test
@@ -133,5 +134,31 @@ class BoardServiceTest {
         pits.get(0).setNumberOfStones(modifiedValue);
         List<PitDAO> refetchedPits = boardService.getBoard(CURRENT_PLAYER);
         assertThat(refetchedPits.get(0).getNumberOfStones(), not(modifiedValue));
+    }
+
+    @Test
+    public void initiallyBothPlayersShouldHaveStones() {
+        assertTrue(boardService.hasStonesLeft(CURRENT_PLAYER));
+        assertTrue(boardService.hasStonesLeft(OTHER_PLAYER));
+    }
+
+    @Test
+    public void whenOnePlayerHasMovedAllTheirStones_shouldReturnFalse() throws IllegalPlayerMoveException {
+        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(4).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(3).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(2).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(1).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(0).getId(), CURRENT_PLAYER);
+
+        // Brute force to win the game
+        boardService.play(pits.get(1).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(2).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(3).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(4).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
+
+        assertFalse(boardService.hasStonesLeft(CURRENT_PLAYER));
     }
 }
