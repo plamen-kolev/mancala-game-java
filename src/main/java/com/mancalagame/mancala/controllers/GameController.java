@@ -1,5 +1,6 @@
 package com.mancalagame.mancala.controllers;
 
+import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.enums.Player;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.model.PitDAO;
@@ -15,13 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.thymeleaf.expression.Lists;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Controller
 @Log
-@RequestMapping(value = "/game")
+@RequestMapping(value = "/")
 public class GameController {
 
     private GameService gameService;
@@ -42,7 +41,7 @@ public class GameController {
         Collections.reverse(p2board);
 
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("welcome");
+        modelAndView.setViewName("game");
         modelAndView.getModel().put("p1board", p1board);
         modelAndView.getModel().put("p2board",  p2board);
 
@@ -52,28 +51,47 @@ public class GameController {
         return modelAndView;
     }
 
+    @GetMapping("/score")
+    public ModelAndView gameResults() {
+
+        Map<Player, Integer> results = gameService.getResults();
+        Player winnter = gameService.getWinner();
+
+        ModelAndView modelAndView = new ModelAndView();
+
+        modelAndView.getModel().put("results",  results);
+        modelAndView.getModel().put("winner",  winnter);
+
+        gameService.reset();
+        modelAndView.setViewName("result");
+        return modelAndView;
+    }
+
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public String play(@RequestParam MultiValueMap body) throws IllegalPlayerMoveException {
         log.info(body.toString());
         int pitId = Integer.parseInt((String) body.getFirst("id"));
-        gameService.play(pitId);
-        return "redirect:/game";
+        GameState gameState = gameService.play(pitId);
+        if(GameState.GAME_WON.equals(gameState)) {
+            return "redirect:/score";
+        }
+        return "redirect:/";
     }
 
     @RequestMapping(method = RequestMethod.DELETE)
     public String reset() throws IllegalPlayerMoveException {
         gameService.reset();
         log.info("Resetting game state");
-        return "redirect:/game";
+        return "redirect:/";
     }
 
     @ExceptionHandler(IllegalPlayerMoveException.class)
     public String handleCustomException(IllegalPlayerMoveException ex) {
 
         ModelAndView model = new ModelAndView("welcome");
-        model.addObject("errCode", ex.getMessage().toString());
-        log.severe(String.format("Error: ", ex.getMessage().toString()));
-        return "redirect:/game";
+        model.addObject("errCode", ex.getMessage());
+        log.severe(String.format("Error: ", ex.getMessage()));
+        return "redirect:/";
 
     }
 

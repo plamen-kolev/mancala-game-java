@@ -9,8 +9,7 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -43,28 +42,36 @@ public class BoardService {
         initializeBoard();
     }
 
-    public List<PitDAO> getBoard() {
-        return board.stream()
-                .map(pit -> clonePit(pit)
-                ).collect(Collectors.toList());
+    public Player getWinner() {
+        Map<Player,Integer> results = getResults();
+        // from https://www.baeldung.com/java-find-map-max
+        Optional<Map.Entry<Player, Integer>> maxEntry = results.entrySet()
+                .stream()
+                .max(Comparator.comparing(Map.Entry::getValue));
+
+        return maxEntry.get().getKey();
+    }
+
+    public Map<Player,Integer> getResults() {
+        return board.stream().filter(pit -> PitType.BIG.equals(pit.getType())).collect(Collectors.toMap(PitDAO::getOwner, PitDAO::getStones));
     }
 
     public GameState play(int pitId, Player current_player) throws IllegalPlayerMoveException {
         int pitIndex = findIndexOfPit(pitId, current_player);
-        PitDAO currentPit = board.get(pitIndex);
+        PitDAO startingPit = board.get(pitIndex);
 
-        int movesToMake = currentPit.getStones();
-        currentPit.setStones(0);
+        int movesToMake = startingPit.getStones();
+        startingPit.setStones(0);
         while (movesToMake != 0) {
-            PitDAO nextPit = board.get((pitIndex + 1) % TOTAL_PIT_INDEXES);
+            PitDAO currentPit = board.get((pitIndex + 1) % TOTAL_PIT_INDEXES);
 
-            log.info(nextPit.toString());
-            if(nextPit.getType() == PitType.BIG && currentPit.getOwner() != current_player) {
+            log.info(currentPit.toString());
+            if(currentPit.getType() == PitType.BIG && currentPit.getOwner() != current_player) {
             } else {
-                nextPit.setStones(nextPit.getStones() + 1);
+                currentPit.setStones(currentPit.getStones() + 1);
                 --movesToMake;
 
-                if(movesToMake == 0 && this.hasStonesLeft(current_player) && PitType.BIG.equals(nextPit)) {
+                if(movesToMake == 0 && this.hasStonesLeft(current_player) && PitType.BIG.equals(currentPit.getType())) {
                     return GameState.EXTRA_TURN;
                 }
 

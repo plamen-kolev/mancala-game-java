@@ -12,50 +12,65 @@
 </head>
 <body>
 <div class="container">
-    <p th:text="${errCode}"></p>
-    <h1 th:text="'Current turn:' + ${turn}"></h1>
+
+    <div class="card bg-light mb-3" style="max-width: 18rem;">
+        <div class="card-header">Currently Playing: </div>
+        <div class="card-body">
+            <p th:text=${turn} class="card-text"></p>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-12">
 
-            <h2>Player 2 side</h2>
-            <div class="row">
+            <div class="row" th:classappend="${#strings.equals(turn, 'PLAYER1') ? 'alert alert-secondary' : 'alert alert-primary'}">
 
-                <div class="border col-md-3"
+                <div class="col-md-1"
                      th:each="item: ${p2board}"
-                     th:if="${#strings.equalsIgnoreCase(item.type, 'BIG')}"
-                     th:text="${item.stones}">
+                     th:if="${#strings.equalsIgnoreCase(item.type, 'BIG')}">
+                    <button disabled th:text="${item.stones}" type="button" class="btn btn-light"></button>
                 </div>
-                <div class="border col-md-1"
+                <div class="col-md-1"
                      th:each="item: ${p2board}"
                      th:if="${#strings.equalsIgnoreCase(item.type, 'SMALL')}">
-                    <form action="#" th:action="@{/game}" method="post">
+                    <form th:if="${#strings.equals(turn, 'PLAYER2')}" action="#" th:action="@{/}" method="post">
                         <input type="hidden" name="id" th:value="${item.id}"/>
                         <input type="hidden" name="type" th:value="${item.type}"/>
                         <input type="hidden" name="owner`" th:value="${item.owner}"/>
                         <input type="submit" th:value="${item.stones}" />
                     </form>
+                    <div th:if="${!#strings.equals(turn, 'PLAYER2')}">
+                        <span th:text="${item.stones}"></span>
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <p>Player 2</p>
                 </div>
 
             </div>
 
-            <h1>Player 1 side</h1>
-            <div class="row">
 
-                <div class="border col-md-1"
+            <div class="row" th:classappend="${#strings.equals(turn, 'PLAYER1') ? 'alert alert-primary' : 'alert alert-secondary'}">
+
+                <div class="col-md-1"
                      th:each="item: ${p1board}"
                      th:if="${#strings.equalsIgnoreCase(item.type, 'SMALL')}">
-                    <form action="#" th:action="@{/game}" method="post">
+                    <form th:if="${#strings.equals(turn, 'PLAYER1')}" action="#" th:action="@{/}" method="post">
                         <input type="hidden" name="id" th:value="${item.id}"/>
                         <input type="hidden" name="type" th:value="${item.type}"/>
                         <input type="hidden" name="owner`" th:value="${item.owner}"/>
                         <input type="submit" th:value="${item.stones}" />
                     </form>
+                    <div th:if="${!#strings.equals(turn, 'PLAYER1')}" th:text="${item.stones}"></div>
                 </div>
 
-                <div class="border col-md-3"
+                <div class="col-md-1"
                      th:each="item: ${p1board}"
-                     th:if="${#strings.equalsIgnoreCase(item.type, 'BIG')}"
-                     th:text="${item.stones}">
+                     th:if="${#strings.equalsIgnoreCase(item.type, 'BIG')}">
+                    <button disabled th:text="${item.stones}" type="button" class="btn btn-light"></button>
+                </div>
+                <div class="col-md-1">
+                    <p>Player 1</p>
                 </div>
             </div>
         </div>

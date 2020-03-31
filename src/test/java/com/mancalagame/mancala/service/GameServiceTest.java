@@ -53,4 +53,10 @@ class GameServiceTest {
         assertThat(nextState, is(expectedState));
         verify(turnService, times(0)).changeTurn();
     }
+
+    @Test
+    public void shouldGetGameResult() {
+        gameService.getResults();
+        verify(boardService).getResults();
+    }
 }

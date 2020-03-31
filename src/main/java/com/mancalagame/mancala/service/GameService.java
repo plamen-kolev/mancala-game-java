@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Log
@@ -25,12 +26,16 @@ public class GameService {
         this.gameWon = false;
     }
 
-    public List<PitDAO> getBoard() {
-        return boardService.getBoard();
-    }
-
     public List<PitDAO> getBoard(Player player) {
         return boardService.getBoard(player);
+    }
+
+    public Map<Player, Integer> getResults() {
+        return boardService.getResults();
+    }
+
+    public Player getWinner() {
+        return boardService.getWinner();
     }
 
     public void reset() {

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -163,5 +164,27 @@ class BoardServiceTest {
         // also this wins the game
         assertFalse(boardService.hasStonesLeft(CURRENT_PLAYER));
         assertThat(gameState, is(GameState.GAME_WON));
+    }
+
+    @Test
+    public void shouldGetResult() throws IllegalPlayerMoveException {
+        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
+
+        Map<Player, Integer> results = boardService.getResults();
+
+        assertThat(results.get(Player.PLAYER2), is(1));
+        assertThat(results.get(Player.PLAYER1), is(0));
+    }
+
+    @Test
+    public void shouldGetWinner() throws IllegalPlayerMoveException {
+        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
+
+        Player winner = boardService.getWinner();
+        assertThat(winner, is(CURRENT_PLAYER));
+
+
     }
 }
