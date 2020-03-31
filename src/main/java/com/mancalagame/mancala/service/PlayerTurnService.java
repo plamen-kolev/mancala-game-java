@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlayerTurnService {
 
-    @Autowired
-    public PlayerTurnService() {}
+    private Player playerTurn;
 
-    private static Player playerTurn;
+    @Autowired
+    public PlayerTurnService() {
+        playerTurn = Player.PLAYER1;
+    }
 
     public PlayerTurnService(Player playerWhoGoesFirst) {
         this.playerTurn = playerWhoGoesFirst;
