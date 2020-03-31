@@ -1,6 +1,6 @@
 package com.mancalagame.mancala.service;
 
-import com.mancalagame.mancala.model.Player;
+import com.mancalagame.mancala.enums.Player;
 import org.springframework.stereotype.Service;
 
 @Service

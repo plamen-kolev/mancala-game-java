@@ -1,4 +1,4 @@
-package com.mancalagame.mancala.model;
+package com.mancalagame.mancala.enums;
 
 public enum PitType {
     SMALL, BIG

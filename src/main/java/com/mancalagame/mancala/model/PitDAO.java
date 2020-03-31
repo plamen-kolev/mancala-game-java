@@ -1,5 +1,7 @@
 package com.mancalagame.mancala.model;
 
+import com.mancalagame.mancala.enums.PitType;
+import com.mancalagame.mancala.enums.Player;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

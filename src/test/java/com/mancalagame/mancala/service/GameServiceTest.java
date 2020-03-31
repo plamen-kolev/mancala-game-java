@@ -1,11 +1,11 @@
 package com.mancalagame.mancala.service;
 
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
-import com.mancalagame.mancala.model.Player;
+import com.mancalagame.mancala.enums.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class GameServiceTest {
@@ -37,5 +37,10 @@ class GameServiceTest {
         //then
         verify(turnService).changeTurn();
         verify(boardService).play(somePitId, CURRENT_PLAYER);
+    }
+
+    @Test
+    public void whenLastStoneInBigPit_playerGetsAnotherRound() {
+        assertTrue(false);
     }
 }

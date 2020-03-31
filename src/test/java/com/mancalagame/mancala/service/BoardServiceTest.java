@@ -1,9 +1,10 @@
 package com.mancalagame.mancala.service;
 
+import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.model.PitDAO;
-import com.mancalagame.mancala.model.PitType;
-import com.mancalagame.mancala.model.Player;
+import com.mancalagame.mancala.enums.PitType;
+import com.mancalagame.mancala.enums.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -157,8 +158,10 @@ class BoardServiceTest {
         boardService.play(pits.get(2).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(3).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(4).getId(), CURRENT_PLAYER);
-        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
+        GameState gameState = boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
 
+        // also this wins the game
         assertFalse(boardService.hasStonesLeft(CURRENT_PLAYER));
+        assertThat(gameState, is(GameState.GAME_WON));
     }
 }

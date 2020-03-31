@@ -1,6 +1,6 @@
 package com.mancalagame.mancala.service;
 
-import com.mancalagame.mancala.model.Player;
+import com.mancalagame.mancala.enums.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

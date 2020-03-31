@@ -1,7 +1,7 @@
 package com.mancalagame.mancala.service;
 
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
-import com.mancalagame.mancala.model.Player;
+import com.mancalagame.mancala.enums.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

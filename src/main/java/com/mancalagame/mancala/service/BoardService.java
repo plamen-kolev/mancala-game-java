@@ -1,9 +1,11 @@
 package com.mancalagame.mancala.service;
 
+import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.model.PitDAO;
-import com.mancalagame.mancala.model.PitType;
-import com.mancalagame.mancala.model.Player;
+import com.mancalagame.mancala.enums.PitType;
+import com.mancalagame.mancala.enums.Player;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +14,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.mancalagame.mancala.model.Player.PLAYER1;
-import static com.mancalagame.mancala.model.Player.PLAYER2;
+import static com.mancalagame.mancala.enums.Player.PLAYER1;
+import static com.mancalagame.mancala.enums.Player.PLAYER2;
 
+@Log
 @Service
 public class BoardService {
 
@@ -23,8 +26,6 @@ public class BoardService {
     private static final int INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT = 6;
     private static final int INITIAL_STONES_IN_BIG_PIT = 0;
     private static final int TOTAL_PIT_INDEXES = 14;
-
-
 
     @Autowired
     public BoardService() {
@@ -44,9 +45,8 @@ public class BoardService {
                 ).collect(Collectors.toList());
     }
 
-    public void play(int pitId, Player current_player) throws IllegalPlayerMoveException {
+    public GameState play(int pitId, Player current_player) throws IllegalPlayerMoveException {
         int pitIndex = findIndexOfPit(pitId, current_player);
-        System.out.println("PIT INDEX"+ pitIndex);
         PitDAO currentPit = board.get(pitIndex);
 
         int movesToMake = currentPit.getNumberOfStones();
@@ -54,14 +54,26 @@ public class BoardService {
         while (movesToMake != 0) {
             PitDAO nextPit = board.get((pitIndex + 1) % TOTAL_PIT_INDEXES);
 
+            log.info(nextPit.toString());
             if(nextPit.getType() == PitType.BIG && currentPit.getOwnership() != current_player) {
             } else {
                 nextPit.setNumberOfStones(nextPit.getNumberOfStones() + 1);
                 --movesToMake;
+
+                if(movesToMake == 0 && this.hasStonesLeft(current_player)) {
+                    return GameState.EXTRA_TURN;
+                }
+
             }
-            System.out.println(nextPit);
+
             pitIndex = ++pitIndex; // skip this pit if its the big pit of the opponent
         }
+
+        if (!this.hasStonesLeft(current_player)) {
+            return GameState.GAME_WON;
+        }
+
+        return GameState.NEXT_MOVE;
 
     }
 
