@@ -1,11 +1,12 @@
 package com.mancalagame.mancala.service;
 
+import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.enums.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 
 class GameServiceTest {
@@ -40,7 +41,18 @@ class GameServiceTest {
     }
 
     @Test
-    public void whenLastStoneInBigPit_playerGetsAnotherRound() {
-        assertTrue(false);
+    public void dontLoseTurnWhenBoardServiceGivesYouExtraRound() throws IllegalPlayerMoveException {
+        int somePitId = 5;
+        GameState expectedState = GameState.EXTRA_TURN;
+        when(turnService.getCurrentPlayer()).thenReturn(CURRENT_PLAYER);
+        when(boardService.play(somePitId, CURRENT_PLAYER)).thenReturn(expectedState);
+
+        // when
+        GameState nextState = gameService.play(somePitId);
+
+        //then
+        assertThat(nextState, is(expectedState));
+        verify(turnService, times(0)).changeTurn();
+
     }
 }
