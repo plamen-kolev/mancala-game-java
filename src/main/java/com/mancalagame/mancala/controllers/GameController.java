@@ -17,6 +17,7 @@ import org.thymeleaf.expression.Lists;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 @Controller
 @Log
@@ -40,15 +41,15 @@ public class GameController {
         List<PitDAO> p2board = gameService.getBoard(Player.PLAYER2);
         Collections.reverse(p2board);
 
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("welcome");
-        mv.getModel().put("p1board", p1board);
-        mv.getModel().put("p2board",  p2board);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("welcome");
+        modelAndView.getModel().put("p1board", p1board);
+        modelAndView.getModel().put("p2board",  p2board);
 
-        mv.getModel().put("turn", turnService.getCurrentPlayer());
+        modelAndView.getModel().put("turn", turnService.getCurrentPlayer());
         log.info(String.format("Current player: %s", turnService.getCurrentPlayer()));
 
-        return mv;
+        return modelAndView;
     }
 
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -65,4 +66,15 @@ public class GameController {
         log.info("Resetting game state");
         return "redirect:/game";
     }
+
+    @ExceptionHandler(IllegalPlayerMoveException.class)
+    public String handleCustomException(IllegalPlayerMoveException ex) {
+
+        ModelAndView model = new ModelAndView("welcome");
+        model.addObject("errCode", ex.getMessage().toString());
+        log.severe(String.format("Error: ", ex.getMessage().toString()));
+        return "redirect:/game";
+
+    }
+
 }
