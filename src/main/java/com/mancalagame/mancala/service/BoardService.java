@@ -6,6 +6,8 @@ import com.mancalagame.mancala.model.PitType;
 import com.mancalagame.mancala.model.Players;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +30,16 @@ public class BoardService {
     }
 
     public List<PitDAO> getBoard(Players player) {
-        return board.stream().filter(pit -> player.equals(pit.getOwnership())).collect(Collectors.toList());
+        return board.stream()
+                .filter(pit -> player.equals(pit.getOwnership()))
+                .map(pit ->
+                        PitDAO.builder()
+                                .numberOfStones(pit.getNumberOfStones())
+                                .ownership(pit.getOwnership())
+                                .id(pit.getId())
+                                .type(pit.getType())
+                                .build()
+                ).collect(Collectors.toList());
     }
 
     public void play(int pitId, Players current_player) throws IllegalPlayerMoveException {
