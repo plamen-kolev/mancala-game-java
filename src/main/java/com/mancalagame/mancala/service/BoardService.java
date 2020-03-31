@@ -1,12 +1,15 @@
 package com.mancalagame.mancala.service;
 
+import com.mancalagame.mancala.exceptions.InvalidItemAccessException;
 import com.mancalagame.mancala.model.PitDAO;
 import com.mancalagame.mancala.model.PitType;
 import com.mancalagame.mancala.model.Players;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -19,6 +22,7 @@ public class BoardService {
     private static final int NUMBER_OF_PITS_PER_PLAYER = 6;
     private static final int INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT = 6;
     private static final int INITIAL_STONES_IN_BIG_PIT = 0;
+    private static final int TOTAL_PIT_INDEXES = 13;
 
 
     public BoardService() {
@@ -29,6 +33,35 @@ public class BoardService {
         return board.stream().filter(pit -> player.equals(pit.getOwnership())).collect(Collectors.toList());
     }
 
+    public void play(UUID pitUUID, Players current_player) throws InvalidItemAccessException {
+        int pitIndex = findIndexOfPit(pitUUID);
+
+        PitDAO currentPit = board.get(pitIndex);
+        int movesToMake = currentPit.getNumberOfStones();
+        while (movesToMake != 0) {
+            PitDAO nextPit = board.get((pitIndex + 1) % TOTAL_PIT_INDEXES);
+
+            if(nextPit.getType() == PitType.BIG && currentPit.getOwnership() != current_player) {
+
+            } else {
+                nextPit.setNumberOfStones(nextPit.getNumberOfStones() + 1);
+                --movesToMake;
+            }
+            pitIndex = ++pitIndex; // skip this pit if its the big pit of the opponent
+        }
+
+    }
+
+    private int findIndexOfPit(UUID pitUUID) throws InvalidItemAccessException {
+
+        for (int i = 0; i < board.size(); i++) {
+            if(board.get(i).getUuid() == pitUUID){
+                return i;
+            }
+        }
+        throw (new InvalidItemAccessException(String.format("Trying to play pit with id '%s', but we couldn't find it", pitUUID)));
+    }
+
     private void initializeBoard() {
         board = new LinkedList<>();
         IntStream.range(0, NUMBER_OF_PITS_PER_PLAYER)
@@ -36,6 +69,7 @@ public class BoardService {
                         PitDAO.builder()
                                 .numberOfStones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
                                 .ownership(PLAYER1)
+                                .uuid(UUID.randomUUID())
                                 .type(PitType.SMALL)
                                 .build()
                 ));
@@ -43,6 +77,7 @@ public class BoardService {
                 PitDAO.builder()
                         .numberOfStones(INITIAL_STONES_IN_BIG_PIT)
                         .ownership(PLAYER1)
+                        .uuid(UUID.randomUUID())
                         .type(PitType.BIG)
                         .build()
         );
@@ -53,6 +88,7 @@ public class BoardService {
                                 .numberOfStones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
                                 .ownership(PLAYER2)
                                 .type(PitType.SMALL)
+                                .uuid(UUID.randomUUID())
                                 .build()
                 ));
         board.add(
@@ -60,7 +96,10 @@ public class BoardService {
                         .numberOfStones(INITIAL_STONES_IN_BIG_PIT)
                         .ownership(PLAYER2)
                         .type(PitType.BIG)
+                        .uuid(UUID.randomUUID())
                         .build()
         );
+
+        // that will make the board wrap around
     }
 }

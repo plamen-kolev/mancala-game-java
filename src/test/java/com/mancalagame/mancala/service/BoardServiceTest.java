@@ -1,5 +1,6 @@
 package com.mancalagame.mancala.service;
 
+import com.mancalagame.mancala.exceptions.InvalidItemAccessException;
 import com.mancalagame.mancala.model.PitDAO;
 import com.mancalagame.mancala.model.PitType;
 import com.mancalagame.mancala.model.Players;
@@ -12,7 +13,7 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PlayerServiceTest {
+class BoardServiceTest {
 
     private BoardService boardService;
     private static final int INITIAL_STONES_PER_PIT = 6;
@@ -46,10 +47,13 @@ class PlayerServiceTest {
     }
 
     @Test
-    public void playerShouldBeAbleToMakeAMove() {
-        List<PitDAO> pits = boardService.getBoard(Players.PLAYER2);
-        boardService.play(pits.get(0));
-        List<PitDAO> updatedPits = boardService.getBoard(Players.PLAYER2);
+    public void playerShouldBeAbleToMakeAMove() throws InvalidItemAccessException {
+
+        Players current_player = Players.PLAYER2;
+
+        List<PitDAO> pits = boardService.getBoard(current_player);
+        boardService.play(pits.get(0).getUuid(), current_player);
+        List<PitDAO> updatedPits = boardService.getBoard(current_player);
 
         // first small pit is empty
         assertThat(updatedPits.get(0).getNumberOfStones() == 0);
