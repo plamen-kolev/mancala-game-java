@@ -20,9 +20,23 @@ class PlayerServiceTest {
         boardService = new BoardService();
     }
     @Test
-    public void shouldHaveInitialisedTheField() {
+    public void shouldInitializeFieldOfPlayerOne() {
         List<PitDAO> pits = boardService.getBoard(Players.PLAYER1);
         assertThat(pits.size()).isEqualTo(7);
+
+        // Last pit is the big pit
+        assertThat(pits.get(6).getType()).isEqualTo(PitType.BIG);
+
+        assertThat(pits.stream().filter(pit -> pit.getType() != PitType.BIG).allMatch(pit -> pit.equals(INITIAL_STONES_PER_PIT)));
+        assertThat(pits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get().getNumberOfStones() == 0);
+    }
+
+    @Test
+    public void shouldInitializeFieldOfPlayerTwo() {
+        List<PitDAO> pits = boardService.getBoard(Players.PLAYER2);
+        assertThat(pits.size()).isEqualTo(7);
+
+        // Last Pit is the big pit
         assertThat(pits.get(6).getType()).isEqualTo(PitType.BIG);
 
         assertThat(pits.stream().filter(pit -> pit.getType() != PitType.BIG).allMatch(pit -> pit.equals(INITIAL_STONES_PER_PIT)));
