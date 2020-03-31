@@ -3,8 +3,11 @@ package com.mancalagame.mancala.service;
 import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.enums.Player;
+import com.mancalagame.mancala.model.PitDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class GameService {
@@ -18,6 +21,14 @@ public class GameService {
         this.boardService = boardService;
         this.turnService = turnService;
         this.gameWon = false;
+    }
+
+    public List<PitDAO> getBoard() {
+        return boardService.getBoard();
+    }
+
+    public List<PitDAO> getBoard(Player player) {
+        return boardService.getBoard(player);
     }
 
     public synchronized GameState play(int pitId) throws IllegalPlayerMoveException {

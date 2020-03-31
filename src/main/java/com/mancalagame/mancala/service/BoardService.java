@@ -35,13 +35,13 @@ public class BoardService {
     public List<PitDAO> getBoard(Player player) {
         return board.stream()
                 .filter(pit -> player.equals(pit.getOwnership()))
-                .map(pit ->
-                        PitDAO.builder()
-                                .numberOfStones(pit.getNumberOfStones())
-                                .ownership(pit.getOwnership())
-                                .id(pit.getId())
-                                .type(pit.getType())
-                                .build()
+                .map(pit -> clonePit(pit)
+                ).collect(Collectors.toList());
+    }
+
+    public List<PitDAO> getBoard() {
+        return board.stream()
+                .map(pit -> clonePit(pit)
                 ).collect(Collectors.toList());
     }
 
@@ -101,6 +101,15 @@ public class BoardService {
                 .reduce(Integer::sum)
                 .get()  > 0;
 
+    }
+
+    private PitDAO clonePit(PitDAO pit) {
+        return PitDAO.builder()
+                .numberOfStones(pit.getNumberOfStones())
+                .ownership(pit.getOwnership())
+                .id(pit.getId())
+                .type(pit.getType())
+                .build();
     }
 
     private void initializeBoard() {
