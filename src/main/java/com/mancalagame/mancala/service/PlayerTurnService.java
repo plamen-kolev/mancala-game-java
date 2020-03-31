@@ -15,6 +15,10 @@ public class PlayerTurnService {
         return playerTurn == player;
     }
 
+    public Player getCurrentPlayer() {
+        return this.playerTurn;
+    }
+
     public void changeTurn() {
         if (this.playerTurn == Player.PLAYER1) {
             this.playerTurn = Player.PLAYER2;
