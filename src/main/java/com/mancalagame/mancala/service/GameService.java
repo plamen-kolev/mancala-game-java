@@ -8,14 +8,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class GameService {
+
     private PlayerTurnService turnService;
     private BoardService boardService;
     private boolean gameWon;
 
     @Autowired
     public GameService(PlayerTurnService turnService, BoardService boardService){
-        this.turnService = turnService;
         this.boardService = boardService;
+        this.turnService = turnService;
         this.gameWon = false;
     }
 

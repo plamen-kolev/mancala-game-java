@@ -16,6 +16,7 @@ class GameServiceTest {
     private PlayerTurnService turnService;
 
     private static final Player CURRENT_PLAYER = Player.PLAYER2;
+    private static final int SOME_PIT_ID = 5;
 
     @BeforeEach
     public void setup() {
@@ -29,30 +30,27 @@ class GameServiceTest {
     @Test
     public void shouldLoseTurnWhenPlayingTurn() throws IllegalPlayerMoveException {
         // given
-        int somePitId = 5;
         when(turnService.getCurrentPlayer()).thenReturn(CURRENT_PLAYER);
 
         // when
-        gameService.play(somePitId);
+        gameService.play(SOME_PIT_ID);
 
         //then
         verify(turnService).changeTurn();
-        verify(boardService).play(somePitId, CURRENT_PLAYER);
+        verify(boardService).play(SOME_PIT_ID, CURRENT_PLAYER);
     }
 
     @Test
     public void dontLoseTurnWhenBoardServiceGivesYouExtraRound() throws IllegalPlayerMoveException {
-        int somePitId = 5;
         GameState expectedState = GameState.EXTRA_TURN;
         when(turnService.getCurrentPlayer()).thenReturn(CURRENT_PLAYER);
-        when(boardService.play(somePitId, CURRENT_PLAYER)).thenReturn(expectedState);
+        when(boardService.play(SOME_PIT_ID, CURRENT_PLAYER)).thenReturn(expectedState);
 
         // when
-        GameState nextState = gameService.play(somePitId);
+        GameState nextState = gameService.play(SOME_PIT_ID);
 
         //then
         assertThat(nextState, is(expectedState));
         verify(turnService, times(0)).changeTurn();
-
     }
 }
