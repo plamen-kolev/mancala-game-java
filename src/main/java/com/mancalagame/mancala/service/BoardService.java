@@ -60,8 +60,8 @@ public class BoardService {
         for (int i = 0; i < board.size(); i++) {
             PitDAO pit = board.get(i);
             if (pit.getId() == id){
-                if (pit.getOwnership() != current_player) {
-                    throw (new IllegalPlayerMoveException(String.format("You can't use pit with id '%s', this belongs to the other player", id)));
+                if (pit.getOwnership() != current_player || PitType.BIG.equals(pit.getType())) {
+                    throw (new IllegalPlayerMoveException(String.format("You can't use pit with id '%s', this belongs to the other player or is the big pit", id)));
                 }
                 return i;
             }
@@ -84,7 +84,7 @@ public class BoardService {
                 PitDAO.builder()
                         .numberOfStones(INITIAL_STONES_IN_BIG_PIT)
                         .ownership(PLAYER1)
-                        .id(7)
+                        .id(6)
                         .type(PitType.BIG)
                         .build()
         );
@@ -95,7 +95,7 @@ public class BoardService {
                                 .numberOfStones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
                                 .ownership(PLAYER2)
                                 .type(PitType.SMALL)
-                                .id(8+i)
+                                .id(7+i)
                                 .build()
                 ));
         board.add(
@@ -103,7 +103,7 @@ public class BoardService {
                         .numberOfStones(INITIAL_STONES_IN_BIG_PIT)
                         .ownership(PLAYER2)
                         .type(PitType.BIG)
-                        .id(14)
+                        .id(13)
                         .build()
         );
 

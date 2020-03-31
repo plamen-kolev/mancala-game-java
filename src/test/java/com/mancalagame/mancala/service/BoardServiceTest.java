@@ -7,12 +7,12 @@ import com.mancalagame.mancala.model.PitType;
 import com.mancalagame.mancala.model.Players;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.hamcrest.Matchers.is;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BoardServiceTest {
@@ -21,6 +21,7 @@ class BoardServiceTest {
     private static final int INITIAL_STONES_PER_PIT = 6;
     private static final int PIT_ID_NOT_IN_DATASET = -1;
     private static final Players CURRENT_PLAYER = Players.PLAYER2;
+    private static final Players OTHER_PLAYER = Players.PLAYER1;
 
     @BeforeEach
     public void setup() {
@@ -28,7 +29,7 @@ class BoardServiceTest {
     }
     @Test
     public void shouldInitializeFieldOfPlayerOne() {
-        List<PitDAO> pits = boardService.getBoard(Players.PLAYER1);
+        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
         assertEquals(pits.size(), 7);
 
 
@@ -70,8 +71,8 @@ class BoardServiceTest {
 
     @Test
     public void youCantStartPlayingWithOponentsItem() throws InvalidItemAccessException {
-        Players other_player = Players.PLAYER1;
-        List<PitDAO> pitsOfOtherPlayer = boardService.getBoard(other_player);
+
+        List<PitDAO> pitsOfOtherPlayer = boardService.getBoard(OTHER_PLAYER);
         String expectedErrorMessage = "You can't use pit with id '0', this belongs to the other player";
 
         try {
@@ -83,12 +84,32 @@ class BoardServiceTest {
     }
 
     @Test
-    public void willThrowExceptionWhenPitCantBeFound() {
+    public void willThrowExceptionWhenPitCantBeFound() throws IllegalPlayerMoveException {
         try {
             boardService.play(PIT_ID_NOT_IN_DATASET, CURRENT_PLAYER);
             fail();
-        } catch (IllegalPlayerMoveException | InvalidItemAccessException e) {
+        } catch ( InvalidItemAccessException e) {
             assertThat(e.getMessage(), is("Trying to play pit with id '-1', but we couldn't find it"));
+        }
+    }
+
+    @Test
+    public void youCantPickFromEitherBigPits() throws InvalidItemAccessException {
+        PitDAO bigPit1 = boardService.getBoard(CURRENT_PLAYER).stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
+        PitDAO bigPit2 = boardService.getBoard(OTHER_PLAYER).stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
+        String expectedErrorMessage = "this belongs to the other player or is the big pit";
+        try {
+            boardService.play(bigPit1.getId(), CURRENT_PLAYER);
+            fail("This test should have failed due to picking from big pit");
+        } catch (IllegalPlayerMoveException e) {
+            assertThat(e.getMessage(), containsString(expectedErrorMessage));
+        }
+
+        try {
+            boardService.play(bigPit2.getId(), CURRENT_PLAYER);
+            fail("This test should have failed due to picking from big pit");
+        } catch (IllegalPlayerMoveException e) {
+            assertThat(e.getMessage(), containsString(expectedErrorMessage));
         }
     }
 }
