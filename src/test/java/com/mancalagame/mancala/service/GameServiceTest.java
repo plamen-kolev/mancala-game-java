@@ -59,4 +59,31 @@ class GameServiceTest {
         gameService.getResults();
         verify(boardService).getResults();
     }
+
+    @Test
+    public void shouldWinGame_whenStateChangesToGameWon() throws IllegalPlayerMoveException {
+        GameState expectedState = GameState.GAME_WON;
+        when(turnService.getCurrentPlayer()).thenReturn(CURRENT_PLAYER);
+        when(boardService.play(SOME_PIT_ID, CURRENT_PLAYER)).thenReturn(expectedState);
+
+        // when
+        GameState nextState = gameService.play(SOME_PIT_ID);
+
+        //then
+        assertThat(nextState, is(expectedState));
+    }
+
+    @Test
+    public void shouldDoNothingIfgameAlreadyWon() throws IllegalPlayerMoveException {
+        GameState expectedState = GameState.GAME_WON;
+        when(turnService.getCurrentPlayer()).thenReturn(CURRENT_PLAYER);
+        when(boardService.play(SOME_PIT_ID, CURRENT_PLAYER)).thenReturn(expectedState);
+
+        // when
+        gameService.play(SOME_PIT_ID); // here, we win the game
+        gameService.play(SOME_PIT_ID); // here, noop
+
+        verify(turnService, times(1)).getCurrentPlayer();
+        verify(boardService, times(1)).play(SOME_PIT_ID, CURRENT_PLAYER);
+    }
 }

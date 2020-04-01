@@ -92,7 +92,6 @@ public class BoardService {
         PitDAO pit;
         try {
             pit = board.get(pitId);
-
         } catch (IndexOutOfBoundsException exception) {
             throw (new IllegalPlayerMoveException(String.format("Trying to play pit with id '%s', but we couldn't find it", pitId)));
         }

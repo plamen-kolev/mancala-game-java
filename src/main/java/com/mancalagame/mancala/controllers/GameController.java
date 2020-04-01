@@ -14,6 +14,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.text.ParseException;
 import java.util.*;
 
 @Controller
@@ -43,8 +44,9 @@ public class GameController {
         modelAndView.getModel().put("p1board", p1board);
         modelAndView.getModel().put("p2board",  p2board);
 
-        modelAndView.getModel().put("turn", turnService.getCurrentPlayer());
-        log.info(String.format("Current player: %s", turnService.getCurrentPlayer()));
+        Player currentTurn = turnService.getCurrentPlayer();
+        modelAndView.getModel().put("turn", currentTurn);
+        log.info(String.format("Current player: %s", currentTurn));
 
         return modelAndView;
     }
@@ -67,8 +69,17 @@ public class GameController {
 
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public String play(@RequestParam MultiValueMap body) throws IllegalPlayerMoveException {
+        Object o = Objects.requireNonNull(body.getFirst("id"));
+        int pitId = -1;
+        if (o instanceof String) {
+            try {
+                pitId = Integer.parseInt((String) o);
+            } catch (NumberFormatException e) {
+                throw new IllegalPlayerMoveException(String.format("Cannot make a move for %s", o.toString()));
+            }
 
-        int pitId = Integer.parseInt((String) Objects.requireNonNull(body.getOrDefault("id", "-1")));
+        }
+
         GameState gameState = gameService.play(pitId);
         if(GameState.GAME_WON.equals(gameState)) {
             return "redirect:/score";
@@ -84,11 +95,11 @@ public class GameController {
     }
 
     @ExceptionHandler(IllegalPlayerMoveException.class)
-    public String handleCustomException(IllegalPlayerMoveException ex) {
+    public String handleCustomException(IllegalPlayerMoveException e) {
 
         ModelAndView model = new ModelAndView("welcome");
-        model.addObject("errCode", ex.getMessage());
-        log.severe(String.format("Error: ", ex.getMessage()));
+        model.addObject("errorMessage", e.getMessage());
+        log.severe(String.format("Error:  %s", e.getMessage()));
         return "redirect:/";
 
     }

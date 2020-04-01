@@ -185,7 +185,22 @@ class BoardServiceTest {
 
         Player winner = boardService.getWinner();
         assertThat(winner, is(CURRENT_PLAYER));
+    }
 
+    @Test
+    public void shouldResetGame() throws IllegalPlayerMoveException {
+        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
 
+        boardService.reset();
+
+        List<PitDAO> restartedPits = boardService.getBoard(CURRENT_PLAYER);
+        assertTrue(
+                restartedPits.stream().filter(pit -> pit.getType() == PitType.SMALL).allMatch(pit -> pit.getStones() == 6)
+        );
+
+        assertTrue(
+                restartedPits.stream().filter(pit -> pit.getType() == PitType.BIG).allMatch(pit -> pit.getStones() == 0)
+        );
     }
 }
