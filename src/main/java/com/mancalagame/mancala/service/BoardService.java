@@ -1,5 +1,6 @@
 package com.mancalagame.mancala.service;
 
+import com.mancalagame.mancala.builders.BoardBuilder;
 import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.model.PitDAO;
@@ -11,24 +12,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static com.mancalagame.mancala.enums.Player.PLAYER1;
-import static com.mancalagame.mancala.enums.Player.PLAYER2;
 
 @Log
 @Service
 public class BoardService {
 
-    private ArrayList<PitDAO> board;
-    private static final int NUMBER_OF_PITS_PER_PLAYER = 6;
-    private static final int INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT = 6;
-    private static final int INITIAL_STONES_IN_BIG_PIT = 0;
-    private static final int TOTAL_PIT_INDEXES = 14;
+    private List<PitDAO> board;
 
     @Autowired
     public BoardService() {
-        initializeBoard();
+        board = BoardBuilder.build();
     }
 
     public List<PitDAO> getBoard(Player player) {
@@ -39,7 +32,7 @@ public class BoardService {
     }
 
     public void reset() {
-        initializeBoard();
+        board = BoardBuilder.build();
     }
 
     public Player getWinner() {
@@ -57,12 +50,19 @@ public class BoardService {
     }
 
     public GameState play(int pitId, Player currentPlayer) throws IllegalPlayerMoveException {
-        int currentPitId = pitId;
-        PitDAO pitToMove = validatePlayerMove(currentPitId, currentPlayer);
+
+        PitDAO pitToMove = validatePlayerMove(pitId, currentPlayer);
         int movesToMake = pitToMove.getStones();
         pitToMove.setStones(0);
+
+        Iterator<PitDAO> iterator = board.listIterator(pitId + 1);
+
         while (movesToMake != 0) {
-            PitDAO currentPit = board.get((currentPitId + 1) % TOTAL_PIT_INDEXES);
+            if(!iterator.hasNext()) {
+                iterator = board.listIterator(0);
+            }
+
+            PitDAO currentPit = iterator.next();
 
             log.info(currentPit.toString());
             if(currentPit.getType() == PitType.BIG && currentPit.getOwner() != currentPlayer) {
@@ -73,10 +73,7 @@ public class BoardService {
                 if(movesToMake == 0 && lastMoveIsInBigPit(currentPit, currentPlayer)) {
                     return GameState.EXTRA_TURN;
                 }
-
             }
-
-            currentPitId = ++currentPitId;
         }
 
         if (!this.hasStonesLeft(currentPlayer)) {
@@ -126,49 +123,5 @@ public class BoardService {
                 .id(pit.getId())
                 .type(pit.getType())
                 .build();
-    }
-
-    private void initializeBoard() {
-        board = new ArrayList<>();
-        IntStream.range(0, NUMBER_OF_PITS_PER_PLAYER)
-                .forEach( i -> board.add(
-                        i,
-                        PitDAO.builder()
-                                .stones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
-                                .owner(PLAYER1)
-                                .id(i)
-                                .type(PitType.SMALL)
-                                .build()
-                ));
-        board.add(6,
-                PitDAO.builder()
-                        .stones(INITIAL_STONES_IN_BIG_PIT)
-                        .owner(PLAYER1)
-                        .id(6)
-                        .type(PitType.BIG)
-                        .build()
-        );
-
-        IntStream.range(0, NUMBER_OF_PITS_PER_PLAYER)
-                .forEach(
-                        i -> board.add(
-                                7+i,
-                        PitDAO.builder()
-                                .stones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
-                                .owner(PLAYER2)
-                                .type(PitType.SMALL)
-                                .id(7+i)
-                                .build()
-                ));
-
-        board.add(
-                13,
-                PitDAO.builder()
-                        .stones(INITIAL_STONES_IN_BIG_PIT)
-                        .owner(PLAYER2)
-                        .type(PitType.BIG)
-                        .id(13)
-                        .build()
-        );
     }
 }

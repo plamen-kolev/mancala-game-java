@@ -49,7 +49,7 @@ public class GameService {
 
         Player currentPlayer = turnService.getCurrentPlayer();
         GameState state = boardService.play(pitId, currentPlayer);
-        log.info(String.format("Game state: ", state.toString()));
+        log.info(String.format("Game state: %s", state));
         if(!GameState.EXTRA_TURN.equals(state)) {
             turnService.changeTurn();
         }

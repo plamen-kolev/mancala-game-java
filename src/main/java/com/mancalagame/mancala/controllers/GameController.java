@@ -67,8 +67,8 @@ public class GameController {
 
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public String play(@RequestParam MultiValueMap body) throws IllegalPlayerMoveException {
-        log.info(body.toString());
-        int pitId = Integer.parseInt((String) Objects.requireNonNull(body.getFirst("id")));
+
+        int pitId = Integer.parseInt((String) Objects.requireNonNull(body.getOrDefault("id", "-1")));
         GameState gameState = gameService.play(pitId);
         if(GameState.GAME_WON.equals(gameState)) {
             return "redirect:/score";
