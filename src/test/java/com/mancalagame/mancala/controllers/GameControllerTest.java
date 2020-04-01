@@ -1,5 +1,6 @@
 package com.mancalagame.mancala.controllers;
 
+import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.enums.Player;
 import com.mancalagame.mancala.service.GameService;
 import com.mancalagame.mancala.service.PlayerTurnService;
@@ -15,8 +16,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 
 @ExtendWith(SpringExtension.class)
@@ -28,6 +29,10 @@ class GameControllerTest {
 
     private GameService gameService;
     private PlayerTurnService turnService;
+
+    private static final int PIT_TO_PLAY = 3;
+    private static final int RESPONSE_STATUS_AFTER_REDIRECT = 302;
+
 
     @BeforeEach
     private void setUp() {
@@ -54,19 +59,38 @@ class GameControllerTest {
 
     @Test
     public void onPostRequestShouldPlayTurn() throws Exception {
-        int pitToPlay = 3;
-        int responseStatusAfterRedirect = 302;
 
         MvcResult mvcResult = (MvcResult) mockMvc.perform(
                 MockMvcRequestBuilders
                         .post(GAME_URL)
-                        .param("id", Integer.toString(pitToPlay))
+                        .param("id", Integer.toString(PIT_TO_PLAY))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andReturn();
 
         int status = mvcResult.getResponse().getStatus();
-        assertThat(status, is(responseStatusAfterRedirect));
+        assertThat(status, is(RESPONSE_STATUS_AFTER_REDIRECT));
 
-        verify(gameService).play(pitToPlay);
+        verify(gameService).play(PIT_TO_PLAY);
+    }
+
+    @Test
+    public void shouldRedirectToScoreScreen_whenGameWon() throws Exception {
+        when(gameService.play(PIT_TO_PLAY)).thenReturn(GameState.GAME_WON);
+
+        MvcResult mvcResult = (MvcResult) mockMvc.perform(
+                MockMvcRequestBuilders
+                        .post(GAME_URL)
+                        .param("id", Integer.toString(PIT_TO_PLAY))
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(redirectedUrl("/score"))
+                .andReturn();
+    }
+
+    @Test
+    public void youCanSendDeleteRequestToResetTheGame() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .delete(GAME_URL));
+        verify(gameService).reset();
     }
 }
