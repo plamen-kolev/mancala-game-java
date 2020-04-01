@@ -10,11 +10,9 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import org.thymeleaf.expression.Lists;
 
 import java.util.*;
 
@@ -70,7 +68,7 @@ public class GameController {
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public String play(@RequestParam MultiValueMap body) throws IllegalPlayerMoveException {
         log.info(body.toString());
-        int pitId = Integer.parseInt((String) body.getFirst("id"));
+        int pitId = Integer.parseInt((String) Objects.requireNonNull(body.getFirst("id")));
         GameState gameState = gameService.play(pitId);
         if(GameState.GAME_WON.equals(gameState)) {
             return "redirect:/score";

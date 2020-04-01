@@ -20,7 +20,7 @@ import static com.mancalagame.mancala.enums.Player.PLAYER2;
 @Service
 public class BoardService {
 
-    private LinkedList<PitDAO> board;
+    private ArrayList<PitDAO> board;
     private static final int NUMBER_OF_PITS_PER_PLAYER = 6;
     private static final int INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT = 6;
     private static final int INITIAL_STONES_IN_BIG_PIT = 0;
@@ -56,31 +56,30 @@ public class BoardService {
         return board.stream().filter(pit -> PitType.BIG.equals(pit.getType())).collect(Collectors.toMap(PitDAO::getOwner, PitDAO::getStones));
     }
 
-    public GameState play(int pitId, Player current_player) throws IllegalPlayerMoveException {
-        int pitIndex = findIndexOfPit(pitId, current_player);
-        PitDAO startingPit = board.get(pitIndex);
-
-        int movesToMake = startingPit.getStones();
-        startingPit.setStones(0);
+    public GameState play(int pitId, Player currentPlayer) throws IllegalPlayerMoveException {
+        int currentPitId = pitId;
+        PitDAO pitToMove = validatePlayerMove(currentPitId, currentPlayer);
+        int movesToMake = pitToMove.getStones();
+        pitToMove.setStones(0);
         while (movesToMake != 0) {
-            PitDAO currentPit = board.get((pitIndex + 1) % TOTAL_PIT_INDEXES);
+            PitDAO currentPit = board.get((currentPitId + 1) % TOTAL_PIT_INDEXES);
 
             log.info(currentPit.toString());
-            if(currentPit.getType() == PitType.BIG && currentPit.getOwner() != current_player) {
+            if(currentPit.getType() == PitType.BIG && currentPit.getOwner() != currentPlayer) {
             } else {
                 currentPit.setStones(currentPit.getStones() + 1);
                 --movesToMake;
 
-                if(movesToMake == 0 && this.hasStonesLeft(current_player) && PitType.BIG.equals(currentPit.getType())) {
+                if(movesToMake == 0 && lastMoveIsInBigPit(currentPit, currentPlayer)) {
                     return GameState.EXTRA_TURN;
                 }
 
             }
 
-            pitIndex = ++pitIndex;
+            currentPitId = ++currentPitId;
         }
 
-        if (!this.hasStonesLeft(current_player)) {
+        if (!this.hasStonesLeft(currentPlayer)) {
             return GameState.GAME_WON;
         }
 
@@ -88,21 +87,27 @@ public class BoardService {
 
     }
 
-    private int findIndexOfPit(int id, Player current_player) throws IllegalPlayerMoveException {
+    private boolean lastMoveIsInBigPit(PitDAO lastMovePit, Player currentPlayer) {
+        return this.hasStonesLeft(currentPlayer) && PitType.BIG.equals(lastMovePit.getType());
+    }
 
-        for (int i = 0; i < board.size(); i++) {
-            PitDAO pit = board.get(i);
-            if (pit.getId() == id){
-                if (pit.getOwner() != current_player || PitType.BIG.equals(pit.getType())) {
-                    throw (new IllegalPlayerMoveException(String.format("You can't use pit with id '%s', this belongs to the other player or is the big pit", id)));
-                }
-                if(pit.getStones() == 0) {
-                    throw (new IllegalPlayerMoveException("Cannot pick from an empty pit"));
-                }
-                return i;
-            }
+    private PitDAO validatePlayerMove(int pitId, Player current_player) throws IllegalPlayerMoveException {
+        PitDAO pit;
+        try {
+            pit = board.get(pitId);
+
+        } catch (IndexOutOfBoundsException exception) {
+            throw (new IllegalPlayerMoveException(String.format("Trying to play pit with id '%s', but we couldn't find it", pitId)));
         }
-        throw (new IllegalPlayerMoveException(String.format("Trying to play pit with id '%s', but we couldn't find it", id)));
+
+        if (pit.getOwner() != current_player || PitType.BIG.equals(pit.getType())) {
+            throw (new IllegalPlayerMoveException(String.format("You can't use pit with id '%s', this belongs to the other player or is the big pit", pit.toString())));
+        }
+        if(pit.getStones() == 0) {
+            throw (new IllegalPlayerMoveException("Cannot pick from an empty pit"));
+        }
+
+        return pit;
     }
 
     public boolean hasStonesLeft(Player player) {
@@ -124,9 +129,10 @@ public class BoardService {
     }
 
     private void initializeBoard() {
-        board = new LinkedList<>();
+        board = new ArrayList<>();
         IntStream.range(0, NUMBER_OF_PITS_PER_PLAYER)
                 .forEach( i -> board.add(
+                        i,
                         PitDAO.builder()
                                 .stones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
                                 .owner(PLAYER1)
@@ -134,7 +140,7 @@ public class BoardService {
                                 .type(PitType.SMALL)
                                 .build()
                 ));
-        board.add(
+        board.add(6,
                 PitDAO.builder()
                         .stones(INITIAL_STONES_IN_BIG_PIT)
                         .owner(PLAYER1)
@@ -144,7 +150,9 @@ public class BoardService {
         );
 
         IntStream.range(0, NUMBER_OF_PITS_PER_PLAYER)
-                .forEach( i -> board.add(
+                .forEach(
+                        i -> board.add(
+                                7+i,
                         PitDAO.builder()
                                 .stones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
                                 .owner(PLAYER2)
@@ -152,7 +160,9 @@ public class BoardService {
                                 .id(7+i)
                                 .build()
                 ));
+
         board.add(
+                13,
                 PitDAO.builder()
                         .stones(INITIAL_STONES_IN_BIG_PIT)
                         .owner(PLAYER2)

@@ -15,7 +15,7 @@ public class PlayerTurnService {
 
     @Autowired
     public PlayerTurnService() {
-        playerTurn =PLAYER_WHO_STARTS;
+        playerTurn = PLAYER_WHO_STARTS;
     }
 
     public PlayerTurnService(Player playerWhoGoesFirst) {
@@ -42,8 +42,4 @@ public class PlayerTurnService {
         }
     }
 
-    @Bean
-    private Player playerWhoGoesFirst() {
-        return Player.PLAYER1;
-    }
 }

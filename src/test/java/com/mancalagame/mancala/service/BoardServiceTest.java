@@ -74,13 +74,13 @@ class BoardServiceTest {
     public void youCantStartPlayingWithOponentsItem() throws IllegalPlayerMoveException {
 
         List<PitDAO> pitsOfOtherPlayer = boardService.getBoard(OTHER_PLAYER);
-        String expectedErrorMessage = "You can't use pit with id '0', this belongs to the other player or is the big pit";
+        String expectedErrorMessage = "this belongs to the other player or is the big pit";
 
         try {
             boardService.play(pitsOfOtherPlayer.get(0).getId(), CURRENT_PLAYER);
             fail();
         } catch (IllegalPlayerMoveException e) {
-            assertThat(e.getMessage(), is(expectedErrorMessage));
+            assertThat(e.getMessage(), containsString(expectedErrorMessage));
         }
     }
 
