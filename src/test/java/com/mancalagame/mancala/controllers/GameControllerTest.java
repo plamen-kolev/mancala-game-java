@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @ExtendWith(SpringExtension.class)
@@ -26,6 +27,7 @@ class GameControllerTest {
 
     private MockMvc mockMvc;
     private static final String GAME_URL = "/";
+    private static final String GAME_SCORE_URL = "/score";
 
     private GameService gameService;
     private PlayerTurnService turnService;
@@ -46,11 +48,9 @@ class GameControllerTest {
     @Test
     public void onGetRequestShouldCallDataLayer() throws Exception {
 
-        MvcResult mvcResult = (MvcResult) mockMvc.perform(MockMvcRequestBuilders.get(GAME_URL))
+        mockMvc.perform(MockMvcRequestBuilders.get(GAME_URL))
+                .andExpect(status().is(200))
                 .andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertThat(status, is(200));
 
         verify(gameService).getBoard(Player.PLAYER1);
         verify(gameService).getBoard(Player.PLAYER2);
@@ -60,15 +60,13 @@ class GameControllerTest {
     @Test
     public void onPostRequestShouldPlayTurn() throws Exception {
 
-        MvcResult mvcResult = (MvcResult) mockMvc.perform(
+        mockMvc.perform(
                 MockMvcRequestBuilders
                         .post(GAME_URL)
                         .param("id", Integer.toString(PIT_TO_PLAY))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().is(RESPONSE_STATUS_AFTER_REDIRECT))
                 .andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertThat(status, is(RESPONSE_STATUS_AFTER_REDIRECT));
 
         verify(gameService).play(PIT_TO_PLAY);
     }
@@ -77,12 +75,12 @@ class GameControllerTest {
     public void shouldRedirectToScoreScreen_whenGameWon() throws Exception {
         when(gameService.play(PIT_TO_PLAY)).thenReturn(GameState.GAME_WON);
 
-        MvcResult mvcResult = (MvcResult) mockMvc.perform(
+        mockMvc.perform(
                 MockMvcRequestBuilders
                         .post(GAME_URL)
                         .param("id", Integer.toString(PIT_TO_PLAY))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(redirectedUrl("/score"))
+                .andExpect(redirectedUrl(GAME_SCORE_URL))
                 .andReturn();
     }
 
@@ -91,6 +89,17 @@ class GameControllerTest {
         mockMvc.perform(
                 MockMvcRequestBuilders
                         .delete(GAME_URL));
+        verify(gameService).reset();
+    }
+
+    @Test
+    public void shouldFetchScoreAndHaveWinner() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get(GAME_SCORE_URL))
+                .andExpect(status().is(200))
+                .andReturn();
+
+        verify(gameService).getResults();
+        verify(gameService).getWinner();
         verify(gameService).reset();
     }
 }
