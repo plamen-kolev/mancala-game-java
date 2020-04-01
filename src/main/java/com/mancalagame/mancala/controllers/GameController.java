@@ -10,9 +10,11 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.ParseException;
 import java.util.*;
@@ -52,15 +54,19 @@ public class GameController {
     }
 
     @GetMapping("/score")
-    public ModelAndView gameResults() {
+    public ModelAndView gameResults(Model model) {
+
 
         Map<Player, Integer> results = gameService.getResults();
         Player winnter = gameService.getWinner();
 
         ModelAndView modelAndView = new ModelAndView();
 
+        String error = (String) model.asMap().get("error");
+
         modelAndView.getModel().put("results",  results);
         modelAndView.getModel().put("winner",  winnter);
+        modelAndView.getModel().put("error",  error);
 
         gameService.reset();
         modelAndView.setViewName("result");
@@ -68,14 +74,15 @@ public class GameController {
     }
 
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public String play(@RequestParam MultiValueMap body) throws IllegalPlayerMoveException {
+    public String play(@RequestParam MultiValueMap body, RedirectAttributes attr) throws IllegalPlayerMoveException {
         Object o = Objects.requireNonNull(body.getFirst("id"));
         int pitId = -1;
         if (o instanceof String) {
             try {
                 pitId = Integer.parseInt((String) o);
             } catch (NumberFormatException e) {
-                throw new IllegalPlayerMoveException(String.format("Cannot make a move for %s", o.toString()));
+                String errorMessage = String.format("Cannot make a move for %s", o.toString());
+                throw new IllegalPlayerMoveException(errorMessage);
             }
 
         }
@@ -95,10 +102,8 @@ public class GameController {
     }
 
     @ExceptionHandler(IllegalPlayerMoveException.class)
-    public String handleCustomException(IllegalPlayerMoveException e) {
-
-        ModelAndView model = new ModelAndView("welcome");
-        model.addObject("errorMessage", e.getMessage());
+    public String handleCustomException(IllegalPlayerMoveException e,  RedirectAttributes redirectAttrs) {
+        redirectAttrs.addFlashAttribute("error", e.getMessage());
         log.severe(String.format("Error:  %s", e.getMessage()));
         return "redirect:/";
 
