@@ -157,6 +157,7 @@ class BoardServiceTest {
         // Brute force to win the game
         boardService.play(pits.get(1).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(2).getId(), CURRENT_PLAYER);
+        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(3).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(4).getId(), CURRENT_PLAYER);
         GameState gameState = boardService.play(pits.get(5).getId(), CURRENT_PLAYER);

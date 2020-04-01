@@ -77,7 +77,7 @@ public class BoardService {
 
             }
 
-            pitIndex = ++pitIndex; // skip this pit if its the big pit of the opponent
+            pitIndex = ++pitIndex;
         }
 
         if (!this.hasStonesLeft(current_player)) {
@@ -160,7 +160,5 @@ public class BoardService {
                         .id(13)
                         .build()
         );
-
-        // that will make the board wrap around
     }
 }

@@ -31,7 +31,7 @@ class GameServiceTest {
     public void shouldLoseTurnWhenPlayingTurn() throws IllegalPlayerMoveException {
         // given
         when(turnService.getCurrentPlayer()).thenReturn(CURRENT_PLAYER);
-
+        when(boardService.play(SOME_PIT_ID, CURRENT_PLAYER)).thenReturn(GameState.NEXT_MOVE);
         // when
         gameService.play(SOME_PIT_ID);
 
