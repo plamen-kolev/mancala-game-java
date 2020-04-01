@@ -11,7 +11,7 @@ import lombok.ToString;
 @Setter
 @Builder
 @ToString
-public class PitDAO {
+public class PitDTO {
     private PitType type;
     private int id;
     private int stones;

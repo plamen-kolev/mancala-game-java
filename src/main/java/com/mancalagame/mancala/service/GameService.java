@@ -3,7 +3,7 @@ package com.mancalagame.mancala.service;
 import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.enums.Player;
-import com.mancalagame.mancala.model.PitDAO;
+import com.mancalagame.mancala.model.PitDTO;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class GameService {
         this.gameWon = false;
     }
 
-    public List<PitDAO> getBoard(Player player) {
+    public List<PitDTO> getBoard(Player player) {
         return boardService.getBoard(player);
     }
 

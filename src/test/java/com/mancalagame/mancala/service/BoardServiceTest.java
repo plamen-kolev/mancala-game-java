@@ -2,7 +2,7 @@ package com.mancalagame.mancala.service;
 
 import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
-import com.mancalagame.mancala.model.PitDAO;
+import com.mancalagame.mancala.model.PitDTO;
 import com.mancalagame.mancala.enums.PitType;
 import com.mancalagame.mancala.enums.Player;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +29,7 @@ class BoardServiceTest {
     }
     @Test
     public void shouldInitializeFieldOfPlayerOne() {
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
         assertEquals(pits.size(), 7);
 
 
@@ -42,7 +42,7 @@ class BoardServiceTest {
 
     @Test
     public void shouldInitializeFieldOfPlayerTwo() {
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
         assertEquals(pits.size(), 7);
 
         // Last Pit is the big pit
@@ -55,9 +55,9 @@ class BoardServiceTest {
     @Test
     public void playerShouldBeAbleToMakeAMove() throws IllegalPlayerMoveException {
 
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
         boardService.play(pits.get(0).getId(), CURRENT_PLAYER);
-        List<PitDAO> updatedPits = boardService.getBoard(CURRENT_PLAYER);
+        List<PitDTO> updatedPits = boardService.getBoard(CURRENT_PLAYER);
 
         // first small pit is empty
         assertThat(updatedPits.get(0).getStones(), is(0));
@@ -66,14 +66,14 @@ class BoardServiceTest {
         assertThat(updatedPits.stream().filter(pit -> pit.getType() == PitType.SMALL && pit.getStones() == 7).toArray().length, is(5));
 
         // and last pit has 1 stone
-        PitDAO bigPitOfPlayer = updatedPits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
+        PitDTO bigPitOfPlayer = updatedPits.stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
         assertThat(bigPitOfPlayer.getStones(), is(1));
     }
 
     @Test
     public void youCantStartPlayingWithOponentsItem() throws IllegalPlayerMoveException {
 
-        List<PitDAO> pitsOfOtherPlayer = boardService.getBoard(OTHER_PLAYER);
+        List<PitDTO> pitsOfOtherPlayer = boardService.getBoard(OTHER_PLAYER);
         String expectedErrorMessage = "this belongs to the other player or is the big pit";
 
         try {
@@ -96,8 +96,8 @@ class BoardServiceTest {
 
     @Test
     public void youCantPickFromEitherBigPits() throws IllegalPlayerMoveException {
-        PitDAO bigPit1 = boardService.getBoard(CURRENT_PLAYER).stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
-        PitDAO bigPit2 = boardService.getBoard(OTHER_PLAYER).stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
+        PitDTO bigPit1 = boardService.getBoard(CURRENT_PLAYER).stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
+        PitDTO bigPit2 = boardService.getBoard(OTHER_PLAYER).stream().filter(pit -> pit.getType() == PitType.BIG).findFirst().get();
         String expectedErrorMessage = "this belongs to the other player or is the big pit";
         try {
             boardService.play(bigPit1.getId(), CURRENT_PLAYER);
@@ -116,7 +116,7 @@ class BoardServiceTest {
 
     @Test
     public void playerCantPickFromEmptyPile() throws IllegalPlayerMoveException {
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
         boardService.play(pits.get(0).getId(), CURRENT_PLAYER);
         String expectedErrorMessage = "Cannot pick from an empty pit";
         // playing the same pit twice will cause the exception
@@ -132,9 +132,9 @@ class BoardServiceTest {
     @Test
     public void playerCannotModifyTheBoard() {
         int modifiedValue = 1000;
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
         pits.get(0).setStones(modifiedValue);
-        List<PitDAO> refetchedPits = boardService.getBoard(CURRENT_PLAYER);
+        List<PitDTO> refetchedPits = boardService.getBoard(CURRENT_PLAYER);
         assertThat(refetchedPits.get(0).getStones(), not(modifiedValue));
     }
 
@@ -146,7 +146,61 @@ class BoardServiceTest {
 
     @Test
     public void whenOnePlayerHasMovedAllTheirStones_shouldReturnFalse() throws IllegalPlayerMoveException {
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
+        GameState gameState = playGameToWin(CURRENT_PLAYER, pits);
+
+        // also this wins the game
+        assertFalse(boardService.hasStonesLeft(CURRENT_PLAYER));
+        assertThat(gameState, is(GameState.GAME_WON));
+    }
+
+    @Test
+    public void shouldGetResult() throws IllegalPlayerMoveException {
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
+        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
+
+        Map<Player, Integer> results = boardService.getResults();
+
+        assertThat(results.get(Player.PLAYER2), is(1));
+        assertThat(results.get(Player.PLAYER1), is(0));
+    }
+
+    @Test
+    public void shouldGetWinner() throws IllegalPlayerMoveException {
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
+        playGameToWin(CURRENT_PLAYER, pits);
+
+        Player winner = boardService.getWinner();
+        assertThat(winner, is(CURRENT_PLAYER));
+    }
+
+    @Test
+    public void shouldNotGetWinner_ifNobodyHasEmptyBoard() throws IllegalPlayerMoveException {
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
+        boardService.play(pits.get(0).getId(), CURRENT_PLAYER);
+
+        Player winner = boardService.getWinner();
+        assertThat(winner, is(Player.NOBODY));
+    }
+
+    @Test
+    public void shouldResetGame() throws IllegalPlayerMoveException {
+        List<PitDTO> pits = boardService.getBoard(CURRENT_PLAYER);
+        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
+
+        boardService.reset();
+
+        List<PitDTO> restartedPits = boardService.getBoard(CURRENT_PLAYER);
+        assertTrue(
+                restartedPits.stream().filter(pit -> pit.getType() == PitType.SMALL).allMatch(pit -> pit.getStones() == 6)
+        );
+
+        assertTrue(
+                restartedPits.stream().filter(pit -> pit.getType() == PitType.BIG).allMatch(pit -> pit.getStones() == 0)
+        );
+    }
+
+    private GameState playGameToWin(Player player, List<PitDTO> pits) throws IllegalPlayerMoveException {
         boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(4).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(3).getId(), CURRENT_PLAYER);
@@ -160,47 +214,7 @@ class BoardServiceTest {
         boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(3).getId(), CURRENT_PLAYER);
         boardService.play(pits.get(4).getId(), CURRENT_PLAYER);
-        GameState gameState = boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
+        return boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
 
-        // also this wins the game
-        assertFalse(boardService.hasStonesLeft(CURRENT_PLAYER));
-        assertThat(gameState, is(GameState.GAME_WON));
-    }
-
-    @Test
-    public void shouldGetResult() throws IllegalPlayerMoveException {
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
-        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
-
-        Map<Player, Integer> results = boardService.getResults();
-
-        assertThat(results.get(Player.PLAYER2), is(1));
-        assertThat(results.get(Player.PLAYER1), is(0));
-    }
-
-    @Test
-    public void shouldGetWinner() throws IllegalPlayerMoveException {
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
-        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
-
-        Player winner = boardService.getWinner();
-        assertThat(winner, is(CURRENT_PLAYER));
-    }
-
-    @Test
-    public void shouldResetGame() throws IllegalPlayerMoveException {
-        List<PitDAO> pits = boardService.getBoard(CURRENT_PLAYER);
-        boardService.play(pits.get(5).getId(), CURRENT_PLAYER);
-
-        boardService.reset();
-
-        List<PitDAO> restartedPits = boardService.getBoard(CURRENT_PLAYER);
-        assertTrue(
-                restartedPits.stream().filter(pit -> pit.getType() == PitType.SMALL).allMatch(pit -> pit.getStones() == 6)
-        );
-
-        assertTrue(
-                restartedPits.stream().filter(pit -> pit.getType() == PitType.BIG).allMatch(pit -> pit.getStones() == 0)
-        );
     }
 }

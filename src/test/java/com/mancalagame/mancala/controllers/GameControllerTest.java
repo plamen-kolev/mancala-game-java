@@ -11,11 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
+
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -93,13 +91,15 @@ class GameControllerTest {
     }
 
     @Test
-    public void shouldFetchScoreAndHaveWinner() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get(GAME_SCORE_URL))
-                .andExpect(status().is(200))
+    public void shouldTriggerErrorHandlingWhenErrorData() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .post(GAME_URL)
+                        .param("id", "I AM NOT A NUMBER")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(redirectedUrl(GAME_URL))
                 .andReturn();
 
-        verify(gameService).getResults();
-        verify(gameService).getWinner();
-        verify(gameService).reset();
+        verifyNoInteractions(gameService);
     }
 }

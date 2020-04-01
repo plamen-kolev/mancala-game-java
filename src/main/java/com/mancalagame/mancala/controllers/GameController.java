@@ -3,20 +3,18 @@ package com.mancalagame.mancala.controllers;
 import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.enums.Player;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
-import com.mancalagame.mancala.model.PitDAO;
+import com.mancalagame.mancala.model.PitDTO;
 import com.mancalagame.mancala.service.GameService;
 import com.mancalagame.mancala.service.PlayerTurnService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.text.ParseException;
 import java.util.*;
 
 @Controller
@@ -36,9 +34,9 @@ public class GameController {
     @GetMapping
     public ModelAndView game() {
 
-        List<PitDAO> p1board = gameService.getBoard(Player.PLAYER1);
+        List<PitDTO> p1board = gameService.getBoard(Player.PLAYER1);
 
-        List<PitDAO> p2board = gameService.getBoard(Player.PLAYER2);
+        List<PitDTO> p2board = gameService.getBoard(Player.PLAYER2);
         Collections.reverse(p2board);
 
         ModelAndView modelAndView = new ModelAndView();
@@ -50,26 +48,6 @@ public class GameController {
         modelAndView.getModel().put("turn", currentTurn);
         log.info(String.format("Current player: %s", currentTurn));
 
-        return modelAndView;
-    }
-
-    @GetMapping("/score")
-    public ModelAndView gameResults(Model model) {
-
-
-        Map<Player, Integer> results = gameService.getResults();
-        Player winnter = gameService.getWinner();
-
-        ModelAndView modelAndView = new ModelAndView();
-
-        String error = (String) model.asMap().get("error");
-
-        modelAndView.getModel().put("results",  results);
-        modelAndView.getModel().put("winner",  winnter);
-        modelAndView.getModel().put("error",  error);
-
-        gameService.reset();
-        modelAndView.setViewName("result");
         return modelAndView;
     }
 

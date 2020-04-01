@@ -3,7 +3,7 @@ package com.mancalagame.mancala.service;
 import com.mancalagame.mancala.builders.BoardBuilder;
 import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
-import com.mancalagame.mancala.model.PitDAO;
+import com.mancalagame.mancala.model.PitDTO;
 import com.mancalagame.mancala.enums.PitType;
 import com.mancalagame.mancala.enums.Player;
 import lombok.extern.java.Log;
@@ -17,14 +17,14 @@ import java.util.stream.Collectors;
 @Service
 public class BoardService {
 
-    private List<PitDAO> board;
+    private List<PitDTO> board;
 
     @Autowired
     public BoardService() {
         board = BoardBuilder.build();
     }
 
-    public List<PitDAO> getBoard(Player player) {
+    public List<PitDTO> getBoard(Player player) {
         return board.stream()
                 .filter(pit -> player.equals(pit.getOwner()))
                 .map(pit -> clonePit(pit)
@@ -36,33 +36,36 @@ public class BoardService {
     }
 
     public Player getWinner() {
-        Map<Player,Integer> results = getResults();
-        // from https://www.baeldung.com/java-find-map-max
-        Optional<Map.Entry<Player, Integer>> maxEntry = results.entrySet()
-                .stream()
-                .max(Comparator.comparing(Map.Entry::getValue));
+        if (!hasStonesLeft(Player.PLAYER1) || !hasStonesLeft(Player.PLAYER2) ) {
 
-        return maxEntry.get().getKey();
+            Map<Player,Integer> results = getResults();
+            // from https://www.baeldung.com/java-find-map-max
+            Optional<Map.Entry<Player, Integer>> maxEntry = results.entrySet()
+                    .stream()
+                    .max(Comparator.comparing(Map.Entry::getValue));
+            return maxEntry.get().getKey();
+        }
+        return Player.NOBODY;
     }
 
     public Map<Player,Integer> getResults() {
-        return board.stream().filter(pit -> PitType.BIG.equals(pit.getType())).collect(Collectors.toMap(PitDAO::getOwner, PitDAO::getStones));
+        return board.stream().filter(pit -> PitType.BIG.equals(pit.getType())).collect(Collectors.toMap(PitDTO::getOwner, PitDTO::getStones));
     }
 
     public GameState play(int pitId, Player currentPlayer) throws IllegalPlayerMoveException {
 
-        PitDAO pitToMove = validatePlayerMove(pitId, currentPlayer);
+        PitDTO pitToMove = validatePlayerMove(pitId, currentPlayer);
         int movesToMake = pitToMove.getStones();
         pitToMove.setStones(0);
 
-        Iterator<PitDAO> iterator = board.listIterator(pitId + 1);
+        Iterator<PitDTO> iterator = board.listIterator(pitId + 1);
 
         while (movesToMake != 0) {
             if(!iterator.hasNext()) {
                 iterator = board.listIterator(0);
             }
 
-            PitDAO currentPit = iterator.next();
+            PitDTO currentPit = iterator.next();
 
             log.info(currentPit.toString());
             if(currentPit.getType() == PitType.BIG && currentPit.getOwner() != currentPlayer) {
@@ -84,12 +87,12 @@ public class BoardService {
 
     }
 
-    private boolean lastMoveIsInBigPit(PitDAO lastMovePit, Player currentPlayer) {
+    private boolean lastMoveIsInBigPit(PitDTO lastMovePit, Player currentPlayer) {
         return this.hasStonesLeft(currentPlayer) && PitType.BIG.equals(lastMovePit.getType());
     }
 
-    private PitDAO validatePlayerMove(int pitId, Player current_player) throws IllegalPlayerMoveException {
-        PitDAO pit;
+    private PitDTO validatePlayerMove(int pitId, Player current_player) throws IllegalPlayerMoveException {
+        PitDTO pit;
         try {
             pit = board.get(pitId);
         } catch (IndexOutOfBoundsException exception) {
@@ -100,7 +103,7 @@ public class BoardService {
             throw (new IllegalPlayerMoveException(String.format("You can't use pit with id '%s', this belongs to the other player or is the big pit", pit.toString())));
         }
         if(pit.getStones() == 0) {
-            throw (new IllegalPlayerMoveException("Cannot pick from an empty pit"));
+            throw (new IllegalPlayerMoveException(String.format("Cannot pick from an empty pit, id: '%s'", pit.getId())));
         }
 
         return pit;
@@ -115,8 +118,8 @@ public class BoardService {
 
     }
 
-    private PitDAO clonePit(PitDAO pit) {
-        return PitDAO.builder()
+    private PitDTO clonePit(PitDTO pit) {
+        return PitDTO.builder()
                 .stones(pit.getStones())
                 .owner(pit.getOwner())
                 .id(pit.getId())
