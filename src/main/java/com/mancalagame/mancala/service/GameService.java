@@ -17,13 +17,11 @@ public class GameService {
 
     private PlayerTurnService turnService;
     private BoardService boardService;
-    private boolean gameWon;
 
     @Autowired
     public GameService(PlayerTurnService turnService, BoardService boardService){
         this.boardService = boardService;
         this.turnService = turnService;
-        this.gameWon = false;
     }
 
     public List<PitDTO> getBoard(Player player) {
@@ -43,18 +41,11 @@ public class GameService {
         turnService.reset();
     }
     public synchronized GameState play(int pitId) throws IllegalPlayerMoveException {
-        if (gameWon) {
-            return GameState.GAME_WON;
-        }
-
         Player currentPlayer = turnService.getCurrentPlayer();
         GameState state = boardService.play(pitId, currentPlayer);
         log.info(String.format("Game state: %s", state));
-        if(!GameState.EXTRA_TURN.equals(state)) {
+        if(GameState.NEXT_MOVE.equals(state)) {
             turnService.changeTurn();
-        }
-        if(GameState.GAME_WON.equals(state)) {
-            gameWon = true;
         }
 
         return state;

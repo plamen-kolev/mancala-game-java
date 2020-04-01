@@ -17,6 +17,7 @@ public class BoardBuilder {
     private static final int NUMBER_OF_PITS_PER_PLAYER = 6;
     private static final int INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT = 6;
     private static final int INITIAL_STONES_IN_BIG_PIT = 0;
+    private static final int NEXT_PLAYER_OFFSET = 7;
 
     public static List<PitDTO> build() {
         ArrayList<PitDTO> board = new ArrayList<>();
@@ -42,12 +43,12 @@ public class BoardBuilder {
         IntStream.range(0, NUMBER_OF_PITS_PER_PLAYER)
                 .forEach(
                         i -> board.add(
-                                7+i,
+                                NEXT_PLAYER_OFFSET + i,
                                 PitDTO.builder()
                                         .stones(INITIAL_NUMBER_OF_STONES_PER_SMALL_PIT)
                                         .owner(PLAYER2)
                                         .type(PitType.SMALL)
-                                        .id(7+i)
+                                        .id(NEXT_PLAYER_OFFSET + i)
                                         .build()
                         ));
 

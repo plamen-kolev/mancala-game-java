@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 public class BoardService {
 
     private List<PitDTO> board;
+    private boolean hasGameWon = false;
+
+    private static final int INDEX_OF_FIRST_ELEMENT = 0;
 
     @Autowired
     public BoardService() {
@@ -32,6 +35,7 @@ public class BoardService {
     }
 
     public void reset() {
+        hasGameWon = false;
         board = BoardBuilder.build();
     }
 
@@ -53,33 +57,38 @@ public class BoardService {
     }
 
     public GameState play(int pitId, Player currentPlayer) throws IllegalPlayerMoveException {
+        if (hasGameWon) {
+            log.info("Game has been won, not moving");
+            return GameState.GAME_WON;
+        }
+        PitDTO startPit = validatePlayerMove(pitId, currentPlayer);
+        log.info("Before");
+        log.info(String.format("Board state: %s", Arrays.toString(board.toArray())));
+        log.info(String.format("Moving pit: %s", startPit));
 
-        PitDTO pitToMove = validatePlayerMove(pitId, currentPlayer);
-        int movesToMake = pitToMove.getStones();
-        pitToMove.setStones(0);
+        int movesToMake = startPit.getStones();
+        startPit.setStones(0);
 
         Iterator<PitDTO> iterator = board.listIterator(pitId + 1);
-
         while (movesToMake != 0) {
             if(!iterator.hasNext()) {
-                iterator = board.listIterator(0);
+                iterator = board.listIterator(INDEX_OF_FIRST_ELEMENT);
             }
 
             PitDTO currentPit = iterator.next();
-
-            log.info(currentPit.toString());
-            if(currentPit.getType() == PitType.BIG && currentPit.getOwner() != currentPlayer) {
+            if (isPuttingInOpponentBigPit(currentPit, currentPlayer)) {
+                continue;
             } else {
                 currentPit.setStones(currentPit.getStones() + 1);
                 --movesToMake;
-
-                if(movesToMake == 0 && lastMoveIsInBigPit(currentPit, currentPlayer)) {
-                    return GameState.EXTRA_TURN;
-                }
+            }
+            if(isLastMoveInBigPit(currentPit, currentPlayer, movesToMake)) {
+                return GameState.EXTRA_TURN;
             }
         }
 
-        if (!this.hasStonesLeft(currentPlayer)) {
+        if (!hasStonesLeft(currentPlayer)) {
+            hasGameWon = true;
             return GameState.GAME_WON;
         }
 
@@ -87,8 +96,29 @@ public class BoardService {
 
     }
 
-    private boolean lastMoveIsInBigPit(PitDTO lastMovePit, Player currentPlayer) {
-        return this.hasStonesLeft(currentPlayer) && PitType.BIG.equals(lastMovePit.getType());
+    public boolean hasGameWon() {
+        return hasGameWon;
+    }
+
+    public boolean hasStonesLeft(Player player) {
+        return getBoard(player).stream()
+                .filter(pit -> PitType.SMALL.equals(pit.getType()))
+                .map(pit -> pit.getStones())
+                .reduce(Integer::sum)
+                .get() > 0;
+
+    }
+
+    private boolean isLastMoveInBigPit(PitDTO lastMovePit, Player currentPlayer, int movesLeft) {
+        return this.hasStonesLeft(currentPlayer)
+                && PitType.BIG.equals(lastMovePit.getType())
+                && lastMovePit.getOwner() == currentPlayer
+                && movesLeft == 0;
+
+    }
+
+    private boolean isPuttingInOpponentBigPit(PitDTO pit, Player currentPlayer) {
+        return PitType.BIG.equals(pit.getType()) && !pit.getOwner().equals(currentPlayer);
     }
 
     private PitDTO validatePlayerMove(int pitId, Player current_player) throws IllegalPlayerMoveException {
@@ -107,15 +137,6 @@ public class BoardService {
         }
 
         return pit;
-    }
-
-    public boolean hasStonesLeft(Player player) {
-        return getBoard(player).stream()
-                .filter(pit -> PitType.SMALL.equals(pit.getType()))
-                .map(pit -> pit.getStones())
-                .reduce(Integer::sum)
-                .get()  > 0;
-
     }
 
     private PitDTO clonePit(PitDTO pit) {

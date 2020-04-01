@@ -54,7 +54,7 @@ public class GameController {
     }
 
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public String play(@RequestParam MultiValueMap body, RedirectAttributes attr) throws IllegalPlayerMoveException {
+    public String play(@RequestParam MultiValueMap body) throws IllegalPlayerMoveException {
         Object o = Objects.requireNonNull(body.getFirst("id"));
         int pitId = -1;
         if (o instanceof String) {

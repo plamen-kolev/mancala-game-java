@@ -7,21 +7,15 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css" />
 
     <title>Mancala Game !</title>
 </head>
 <body>
 <div class="container">
 
-    <div class="card bg-light mb-3" style="max-width: 18rem;">
-        <div class="card-header">Currently Playing: </div>
-        <div class="card-body">
-            <p th:text=${turn} class="card-text current_player"></p>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-12">
+    <div class="row margin-top game_area">
+        <div class="col-12">
 
             <div th:if="${error}" class="alert alert-warning" role="alert">
                 <p th:text="${error}"></p>
@@ -29,12 +23,12 @@
 
             <div class="row" th:classappend="${#strings.equals(turn, 'PLAYER1') ? 'alert alert-secondary' : 'alert alert-primary'}">
 
-                <div class="col-md-1"
+                <div class="col-1"
                      th:each="item: ${p2board}"
                      th:if="${#strings.equalsIgnoreCase(item.type, 'BIG')}">
                     <button th:text="${item.stones}" type="button" class="btn btn-light disabled border border-primary"></button>
                 </div>
-                <div class="col-md-1"
+                <div class="col-1"
                      th:each="item: ${p2board}"
                      th:if="${#strings.equalsIgnoreCase(item.type, 'SMALL')}">
                     <form th:if="${#strings.equals(turn, 'PLAYER2')}" action="#" th:action="@{/}" method="post">
@@ -47,7 +41,7 @@
                         <span th:text="${item.stones}"></span>
                     </div>
                 </div>
-                <div class="col-md-1">
+                <div class="col-1">
                     <p>Player 2</p>
                 </div>
 
@@ -56,7 +50,7 @@
 
             <div class="row" th:classappend="${#strings.equals(turn, 'PLAYER1') ? 'alert alert-primary' : 'alert alert-secondary'}">
 
-                <div class="col-md-1"
+                <div class="col-1"
                      th:each="item: ${p1board}"
                      th:if="${#strings.equalsIgnoreCase(item.type, 'SMALL')}">
                     <form th:if="${#strings.equals(turn, 'PLAYER1')}" action="#" th:action="@{/}" method="post">
@@ -68,18 +62,42 @@
                     <div th:if="${!#strings.equals(turn, 'PLAYER1')}" th:text="${item.stones}"></div>
                 </div>
 
-                <div class="col-md-1"
+                <div class="col-1"
                      th:each="item: ${p1board}"
                      th:if="${#strings.equalsIgnoreCase(item.type, 'BIG')}">
                     <button th:text="${item.stones}" type="button" class="btn btn-light disabled border border-primary"></button>
                 </div>
-                <div class="col-md-1">
+                <div class="col-1">
                     <p>Player 1</p>
                 </div>
             </div>
         </div>
         <div>
             <a href="/score">Score page</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card bg-light mb-3" style="max-width: 18rem;">
+            <div class="card-header">Currently Playing: </div>
+            <div class="card-body">
+                <p th:text=${turn} class="card-text current_player"></p>
+            </div>
+        </div>
+        <div class="card bg-light mb-3">
+            <div class="card-header">Game rules: </div>
+            <div class="card-body">
+                <p class="card-text">
+                    1. Player 1 Goes First <br/>
+                    2. Game order is counter clockwise<br/>
+                    3. The player with the blue highlight has the current turn<br/>
+                    4. If the last stone lands in the big pit, player gets a turn<br/>
+                    5. The big pit is the area with border around it<br/>
+                    6. Players can't use the other player's stones<br/>
+                    7. You can't play a pit with 0 stones<br/>
+                    8. The player who is left with all pits without stones ends the game<br/>
+                    9. Score page can be viewed at any time, but when player wins, it will reset the game</p>
+            </div>
         </div>
     </div>
 </div>
