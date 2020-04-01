@@ -12,11 +12,20 @@
 </head>
 <body>
 <div class="container">
-    <h1 th:text="'The winner is: ' + ${winner}"></h1>
-    <div th:each="instance : ${results}">
-        <h2 th:text="${instance.key} + ', Score: ' + ${instance.value}"></h1>
+    <div th:if="${!#strings.equals(winner, 'NOBODY')}">
+        <h1 th:text="'The winner is: ' + ${winner}"></h1>
+        <div th:each="instance : ${results}">
+            <h2 th:text="${instance.key} + ', Score: ' + ${instance.value}"></h1>
+        </div>
+        <a href="/">Go Back To Game</a>
     </div>
-    <a href="/">Go Back To Game</a>
+
+    <div th:if="${#strings.equals(winner, 'NOBODY')}">
+        <div th:each="instance : ${results}">
+            <h2 th:text="${instance.key} + ', Score: ' + ${instance.value}"></h1>
+        </div>
+        <p>Nobody has won yet, <a href="/">Go Back To Game</a></p>
+    </div>
 
 </div>
 
@@ -27,7 +36,7 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <script src="confetti.js"></script>
-<script>
+<script th:if="${!#strings.equals(winner, 'NOBODY')}">
     confetti.start(1000,1000,1000);
 </script>
 </body>
