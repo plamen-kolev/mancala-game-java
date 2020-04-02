@@ -121,19 +121,31 @@ public class BoardService {
         return PitType.BIG.equals(pit.getType()) && !pit.getOwner().equals(currentPlayer);
     }
 
-    private PitDTO validatePlayerMove(int pitId, Player current_player) throws IllegalPlayerMoveException {
+    private PitDTO getPit(int pitId) throws IllegalPlayerMoveException {
         PitDTO pit;
         try {
             pit = board.get(pitId);
         } catch (IndexOutOfBoundsException exception) {
             throw (new IllegalPlayerMoveException(String.format("Trying to play pit with id '%s', but we couldn't find it", pitId)));
         }
+        return pit;
+    }
+
+    public boolean isPitEmpty(int pitId) {
+        try {
+            PitDTO pit = getPit(pitId);
+            return pit.getStones() != 0;
+        } catch (IllegalPlayerMoveException e) {
+            return false;
+        }
+    }
+
+    public PitDTO validatePlayerMove(int pitId, Player current_player) throws IllegalPlayerMoveException {
+        PitDTO pit = getPit(pitId);
+
 
         if (pit.getOwner() != current_player || PitType.BIG.equals(pit.getType())) {
             throw (new IllegalPlayerMoveException(String.format("You can't use pit with id '%s', this belongs to the other player or is the big pit", pit.toString())));
-        }
-        if(pit.getStones() == 0) {
-            throw (new IllegalPlayerMoveException(String.format("Cannot pick from an empty pit, id: '%s'", pit.getId())));
         }
 
         return pit;
