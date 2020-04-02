@@ -44,9 +44,9 @@ public class SimpleStateMachineConfiguration
         transitions.withExternal()
                 .source(State.PLAYER1_TURN)
                 .target(State.PLAYER1_GETS_EXTRA_TURN_CHOICE)
-//                .guard(guards.pitExists())
+                .guard(guards.pitExists())
                 .guard(guards.pitNotEmpty())
-//                .guard(guards.isSmallPit())
+                .guard(guards.isSmallPit())
                 .event(Event.PLAY)
         ;
     }

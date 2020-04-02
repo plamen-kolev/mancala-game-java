@@ -109,6 +109,35 @@ public class BoardService {
 
     }
 
+
+    //    USED FOR FINITE STATE MACHINE
+    public boolean isPitEmpty(int pitId) {
+        try {
+            PitDTO pit = getPit(pitId);
+            return pit.getStones() != 0;
+        } catch (IllegalPlayerMoveException e) {
+            return false;
+        }
+    }
+
+    public boolean doesPitExist(int pitId) {
+        try {
+            getPit(pitId);
+            return true;
+        } catch (IllegalPlayerMoveException e) {
+            return false;
+        }
+    }
+
+    public boolean isSmallPit(int pitId) {
+        try {
+            PitDTO pit = getPit(pitId);
+            return PitType.SMALL.equals(pit.getType());
+        } catch (IllegalPlayerMoveException e) {
+            return false;
+        }
+    }
+
     private boolean isLastMoveInBigPit(PitDTO lastMovePit, Player currentPlayer, int movesLeft) {
         return this.hasStonesLeft(currentPlayer)
                 && PitType.BIG.equals(lastMovePit.getType())
@@ -129,15 +158,6 @@ public class BoardService {
             throw (new IllegalPlayerMoveException(String.format("Trying to play pit with id '%s', but we couldn't find it", pitId)));
         }
         return pit;
-    }
-
-    public boolean isPitEmpty(int pitId) {
-        try {
-            PitDTO pit = getPit(pitId);
-            return pit.getStones() != 0;
-        } catch (IllegalPlayerMoveException e) {
-            return false;
-        }
     }
 
     public PitDTO validatePlayerMove(int pitId, Player current_player) throws IllegalPlayerMoveException {

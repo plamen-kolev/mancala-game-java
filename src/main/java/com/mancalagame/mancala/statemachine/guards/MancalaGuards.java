@@ -7,6 +7,7 @@ import com.mancalagame.mancala.statemachine.states.State;
 import lombok.extern.java.Log;
 import org.springframework.context.annotation.Bean;
 import org.springframework.statemachine.StateContext;
+import org.springframework.statemachine.StateMachineContext;
 import org.springframework.statemachine.guard.Guard;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +22,27 @@ public class MancalaGuards {
     }
 
     public Guard<State, Event> pitNotEmpty() {
-        return new Guard<State, Event>() {
-
-            @Override
-            public boolean evaluate(StateContext<State, Event> context) {
-                System.out.println("Guard is running");
-                int pitToPlay = (int) context.getMessage().getHeaders().get(HeaderName.PITID.name());
-                return boardService.isPitEmpty(pitToPlay);
-            }
+        return context -> {
+            int pitToPlay = getPitId(context);
+            return boardService.isPitEmpty(pitToPlay);
         };
+    }
+
+    public Guard<State, Event> pitExists() {
+        return context -> {
+            int pitToPlay = getPitId(context);
+            return boardService.doesPitExist(pitToPlay);
+        };
+    }
+
+    public Guard<State, Event> isSmallPit() {
+        return context -> {
+            int pitToPlay = getPitId(context);
+            return boardService.isSmallPit(pitToPlay);
+        };
+    }
+
+    private int getPitId(StateContext<State, Event> context) {
+        return (int) context.getMessage().getHeaders().get(HeaderName.PITID.name());
     }
 }
