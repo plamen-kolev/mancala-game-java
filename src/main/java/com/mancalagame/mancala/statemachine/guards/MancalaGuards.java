@@ -2,6 +2,7 @@ package com.mancalagame.mancala.statemachine.guards;
 
 import com.mancalagame.mancala.enums.HeaderName;
 import com.mancalagame.mancala.service.BoardService;
+import com.mancalagame.mancala.service.PlayerTurnService;
 import com.mancalagame.mancala.statemachine.events.Event;
 import com.mancalagame.mancala.statemachine.states.State;
 import lombok.extern.java.Log;
@@ -16,9 +17,11 @@ import org.springframework.stereotype.Component;
 public class MancalaGuards {
 
     private BoardService boardService;
+    private PlayerTurnService turnService;
 
-    public MancalaGuards(BoardService boardService) {
+    public MancalaGuards(BoardService boardService, PlayerTurnService turnService) {
         this.boardService = boardService;
+        this.turnService = turnService;
     }
 
     public Guard<State, Event> pitNotEmpty() {
@@ -26,6 +29,10 @@ public class MancalaGuards {
             int pitToPlay = getPitId(context);
             return boardService.isPitEmpty(pitToPlay);
         };
+    }
+
+    public Guard<State, Event> isPlayerBoardEmpty() {
+        return context -> !boardService.hasStonesLeft(turnService.getCurrentPlayer());
     }
 
     public Guard<State, Event> pitExists() {
@@ -41,6 +48,15 @@ public class MancalaGuards {
             return boardService.isSmallPit(pitToPlay);
         };
     }
+
+
+    public Guard<State, Event> playerHasExtraTurn() {
+        return context -> {
+            System.out.println("asd");
+            return (boolean) context.getExtendedState().get(HeaderName.EXTRA_TURN, Boolean.class);
+        };
+    }
+
 
     private int getPitId(StateContext<State, Event> context) {
         return (int) context.getMessage().getHeaders().get(HeaderName.PITID.name());

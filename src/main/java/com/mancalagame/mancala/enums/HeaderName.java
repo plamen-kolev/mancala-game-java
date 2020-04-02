@@ -1,5 +1,5 @@
 package com.mancalagame.mancala.enums;
 
 public enum  HeaderName {
-    PITID
+    PITID, EXTRA_TURN
 }
