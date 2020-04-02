@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Mancala Game !</title>
+</head>
+<body>
+<div class="container">
+    <div th:if="${!#strings.equals(winner, 'NOBODY')}">
+        <h1 th:text="'The winner is: ' + ${winner}"></h1>
+        <div th:each="instance : ${results}">
+            <h2 th:text="${instance.key} + ', Score: ' + ${instance.value}"></h1>
+        </div>
+        <a href="/">Go Back To Game</a>
+    </div>
+
+    <div th:if="${#strings.equals(winner, 'NOBODY')}">
+        <div th:each="instance : ${results}">
+            <h2 th:text="${instance.key} + ', Score: ' + ${instance.value}"></h1>
+        </div>
+        <p>Nobody has won yet, <a href="/">Go Back To Game</a></p>
+    </div>
+
+</div>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<script src="confetti.js"></script>
+<script th:if="${!#strings.equals(winner, 'NOBODY')}">
+    confetti.start(1000,1000,1000);
+</script>
+</body>
+</html>
