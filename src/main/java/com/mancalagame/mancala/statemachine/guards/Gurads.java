@@ -14,12 +14,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Log
-public class MancalaGuards {
+public class Gurads {
 
     private BoardService boardService;
     private PlayerTurnService turnService;
 
-    public MancalaGuards(BoardService boardService, PlayerTurnService turnService) {
+    public Gurads(BoardService boardService, PlayerTurnService turnService) {
         this.boardService = boardService;
         this.turnService = turnService;
     }
@@ -38,14 +38,19 @@ public class MancalaGuards {
     public Guard<State, Event> pitExists() {
         return context -> {
             int pitToPlay = getPitId(context);
-            return boardService.doesPitExist(pitToPlay);
+            boolean pitExists = boardService.doesPitExist(pitToPlay);
+            log.info(String.format("Pit exists: %s", pitExists));
+
+            return pitExists;
         };
     }
 
     public Guard<State, Event> isSmallPit() {
         return context -> {
             int pitToPlay = getPitId(context);
-            return boardService.isSmallPit(pitToPlay);
+            boolean isSmallPit = boardService.isSmallPit(pitToPlay);
+            log.info(String.format("Pit exists: %s", isSmallPit));
+            return isSmallPit;
         };
     }
 

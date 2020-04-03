@@ -34,6 +34,12 @@ public class BoardService {
                 ).collect(Collectors.toList());
     }
 
+    public Map<Player, List<PitDTO>> getBoard() {
+        return board.stream()
+                .map(pit -> clonePit(pit)
+                ).collect(Collectors.groupingBy(PitDTO::getOwner));
+    }
+
     public void reset() {
         hasGameWon = false;
         board = BoardBuilder.build();
@@ -62,9 +68,6 @@ public class BoardService {
             return GameState.GAME_WON;
         }
         PitDTO startPit = validatePlayerMove(pitId, currentPlayer);
-        log.info("Before");
-        log.info(String.format("Board state: %s", Arrays.toString(board.toArray())));
-        log.info(String.format("Moving pit: %s", startPit));
 
         int movesToMake = startPit.getStones();
         startPit.setStones(0);

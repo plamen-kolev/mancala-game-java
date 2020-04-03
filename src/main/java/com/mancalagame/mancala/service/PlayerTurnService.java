@@ -31,12 +31,13 @@ public class PlayerTurnService {
        this.playerTurn = PLAYER_WHO_STARTS;
     }
 
-    public void changeTurn() {
+    public Player changeTurn() {
         if (this.playerTurn == Player.PLAYER1) {
             this.playerTurn = Player.PLAYER2;
         } else {
             this.playerTurn = Player.PLAYER1;
         }
+        return this.playerTurn;
     }
 
 }

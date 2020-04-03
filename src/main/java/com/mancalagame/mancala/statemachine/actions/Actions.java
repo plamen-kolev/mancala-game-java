@@ -2,6 +2,7 @@ package com.mancalagame.mancala.statemachine.actions;
 
 import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.enums.HeaderName;
+import com.mancalagame.mancala.enums.Player;
 import com.mancalagame.mancala.exceptions.IllegalPlayerMoveException;
 import com.mancalagame.mancala.model.PitDTO;
 import com.mancalagame.mancala.service.BoardService;
@@ -15,6 +16,7 @@ import org.springframework.statemachine.action.Action;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Log
@@ -33,23 +35,25 @@ public class Actions {
         return context -> {
             int pitId = getPitId(context);
             try {
-
+                Map stateVariables = context.getExtendedState().getVariables();
                 GameState state = boardService.play(pitId, turnService.getCurrentPlayer());
 
-                context.getExtendedState()
-                        .getVariables().put(HeaderName.EXTRA_TURN, GameState.EXTRA_TURN.equals(state));
+                Map<Player, List<PitDTO>> board = boardService.getBoard();
+                stateVariables.put(HeaderName.EXTRA_TURN, GameState.EXTRA_TURN.equals(state));
+                stateVariables.put(HeaderName.BOARD, board);
+                stateVariables.put(HeaderName.TURN, turnService.getCurrentPlayer());
 
-                List<PitDTO> board = boardService.getBoard(turnService.getCurrentPlayer());
-                log.info(board.toString());
             } catch (IllegalPlayerMoveException e) {
                 log.severe(e.getMessage());
             }
         };
     }
 
-    public Action<State, Event> endTurn() {
+    public Action<State, Event> changeTurn() {
         return context -> {
-            turnService.changeTurn();
+            Map stateVariables = context.getExtendedState().getVariables();
+            Player player = turnService.changeTurn();
+            stateVariables.put(HeaderName.TURN, player);
         };
     }
 
