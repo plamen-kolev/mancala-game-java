@@ -117,7 +117,7 @@ public class BoardService {
     public boolean isPitEmpty(int pitId) {
         try {
             PitDTO pit = getPit(pitId);
-            return pit.getStones() != 0;
+            return pit.getStones() == 0;
         } catch (IllegalPlayerMoveException e) {
             return false;
         }

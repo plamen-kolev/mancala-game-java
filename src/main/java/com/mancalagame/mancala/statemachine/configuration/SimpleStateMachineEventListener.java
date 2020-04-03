@@ -20,16 +20,28 @@ import java.util.Optional;
 @Configuration
 @Log
 public class SimpleStateMachineEventListener extends StateMachineListenerAdapter<State, Event> {
-//    @Override
-//    public void stateChanged(org.springframework.statemachine.state.State<State, Event> from, org.springframework.statemachine.state.State<State, Event> to) {
-//        super.stateChanged(from, to);
-//        String message = "State changed from '%s'\nto '%s'";
-//        if(from != null && to != null) {
-//             log.info(String.format(message, from.getId(), to.getId()));
-//        } else {
-//            log.info(String.format("State changed from '%s'\nto '%s'", from, to));
-//        }
-//    }
+    @Override
+    public void stateChanged(org.springframework.statemachine.state.State<State, Event> from, org.springframework.statemachine.state.State<State, Event> to) {
+        super.stateChanged(from, to);
+        String message = "State changed from '%s'\nto '%s'";
+        if(from != null && to != null) {
+             log.info(String.format(message, from.getId(), to.getId()));
+        } else {
+            log.info(String.format("State changed from '%s'\nto '%s'", from, to));
+        }
+    }
+
+
+    @Override
+    public void stateMachineStarted(StateMachine<State, Event> stateMachine) {
+        stateMachine.getTransitions().stream().forEach(transition -> {
+            log.info(String.format(
+                    "%s -> %s",
+                    transition.getSource().getId(),
+                    transition.getTarget().getId()
+            ));
+        });
+    }
 
     @Override
     public void stateEntered(org.springframework.statemachine.state.State<State, Event> state) {

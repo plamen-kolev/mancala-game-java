@@ -15,6 +15,7 @@ import org.springframework.statemachine.config.EnableStateMachine;
 import org.springframework.statemachine.config.StateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.*;
 
+import java.util.EnumSet;
 import java.util.Map;
 
 @Configuration
@@ -68,14 +69,10 @@ public class SimpleStateMachineConfiguration
                 })
                 .end(State.END)
 
-                .state(State.PLAYER_1_TURN)
-                .state(State.PLAYER_1_END_TURN)
+                .states(EnumSet.allOf(State.class))
 
                 .choice(State.PLAYER_1_EMPTY_BOARD_CHOICE)
                 .choice(State.PLAYER_1_GETS_EXTRA_TURN_CHOICE)
-
-                .state(State.PLAYER_2_TURN)
-                .state(State.PLAYER_2_END_TURN)
 
                 .choice(State.PLAYER_2_EMPTY_BOARD_CHOICE)
                 .choice(State.PLAYER_2_GETS_EXTRA_TURN_CHOICE)

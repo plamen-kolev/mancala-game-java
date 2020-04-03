@@ -27,7 +27,9 @@ public class Gurads {
     public Guard<State, Event> pitNotEmpty() {
         return context -> {
             int pitToPlay = getPitId(context);
-            return boardService.isPitEmpty(pitToPlay);
+            boolean pitNotEmpty = !boardService.isPitEmpty(pitToPlay);
+            log.info(String.format("Pit not empty: %s, %s", pitToPlay, pitNotEmpty));
+            return pitNotEmpty;
         };
     }
 
