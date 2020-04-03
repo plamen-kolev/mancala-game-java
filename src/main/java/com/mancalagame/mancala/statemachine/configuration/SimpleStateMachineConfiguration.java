@@ -2,7 +2,6 @@ package com.mancalagame.mancala.statemachine.configuration;
 
 import com.mancalagame.mancala.enums.GameState;
 import com.mancalagame.mancala.enums.HeaderName;
-import com.mancalagame.mancala.enums.Player;
 import com.mancalagame.mancala.service.BoardService;
 import com.mancalagame.mancala.service.PlayerTurnService;
 import com.mancalagame.mancala.statemachine.actions.Actions;
@@ -24,7 +23,7 @@ public class SimpleStateMachineConfiguration
         extends StateMachineConfigurerAdapter<State, Event> {
 
     private SimpleStateMachineEventListener stateMachineEventListener;
-    private Gurads guards;
+    private Gurads compositeGuard;
     private Actions actions;
     private BoardService boardService;
     private PlayerTurnService turnService;
@@ -40,7 +39,7 @@ public class SimpleStateMachineConfiguration
         this.boardService = boardService;
         this.turnService = turnService;
         this.actions = moveAction;
-        this.guards = someGuard;
+        this.compositeGuard = someGuard;
     }
 
     @Override
@@ -71,72 +70,70 @@ public class SimpleStateMachineConfiguration
 
                 .states(EnumSet.allOf(State.class))
 
-                .choice(State.PLAYER_1_EMPTY_BOARD_CHOICE)
-                .choice(State.PLAYER_1_GETS_EXTRA_TURN_CHOICE)
-
-                .choice(State.PLAYER_2_EMPTY_BOARD_CHOICE)
-                .choice(State.PLAYER_2_GETS_EXTRA_TURN_CHOICE)
-                ;
+                .choice(State.PLAYER_1_WINS_OR_GET_EXTRA_TURN_CHOICE)
+                .choice(State.PLAYER_2_WINS_OR_GET_EXTRA_TURN_CHOICE)
+        ;
     }
 
     @Override
     public void configure(
             StateMachineTransitionConfigurer<State, Event> transitions) throws Exception {
 
-        transitions.withExternal()
-                .source(State.PLAYER_1_TURN)
-                .target(State.PLAYER_1_EMPTY_BOARD_CHOICE)
-                .guard(guards.pitExists())
-                .guard(guards.pitNotEmpty())
-                .guard(guards.isSmallPit())
-                .action(actions.makeMove())
-                .event(Event.PLAY)
+        transitions
+                .withExternal()
+                    .source(State.PLAYER_1_TURN)
+                    .target(State.PLAYER_1_WINS_OR_GET_EXTRA_TURN_CHOICE)
+                    .guard(compositeGuard.compose(
+                            compositeGuard.pitExists(),
+                            compositeGuard.pitNotEmpty(),
+                            compositeGuard.isSmallPit()
+                    ))
+                    .action(actions.makeMove())
+                    .event(Event.PLAY)
 
                 .and()
                 .withChoice()
-                .source(State.PLAYER_1_EMPTY_BOARD_CHOICE)
-                .first(State.END, guards.isPlayerBoardEmpty())
-                .last(State.PLAYER_1_GETS_EXTRA_TURN_CHOICE)
-
-                .and()
-                .withChoice()
-                .source(State.PLAYER_1_GETS_EXTRA_TURN_CHOICE)
-                .first(State.PLAYER_1_TURN, guards.playerHasExtraTurn())
-                .last(State.PLAYER_1_END_TURN)
+                    .source(State.PLAYER_1_WINS_OR_GET_EXTRA_TURN_CHOICE)
+                    .first(State.END, compositeGuard.isPlayerBoardEmpty())
+                    .then(State.PLAYER_1_TURN, compositeGuard.playerHasExtraTurn())
+                    .last(State.PLAYER_1_END_TURN)
 
                 .and()
                 .withExternal()
-                .source(State.PLAYER_1_END_TURN)
-                .target(State.PLAYER_2_TURN)
-                .action(actions.changeTurn())
+                    .source(State.PLAYER_1_END_TURN)
+                    .target(State.PLAYER_2_TURN)
+                    .action(actions.endTurn())
 
                 .and()
                 .withExternal()
-                .source(State.PLAYER_2_TURN)
-                .target(State.PLAYER_2_EMPTY_BOARD_CHOICE)
-                .guard(guards.pitExists())
-                .guard(guards.pitNotEmpty())
-                .guard(guards.isSmallPit())
-                .action(actions.makeMove())
-                .event(Event.PLAY)
+                    .source(State.PLAYER_2_TURN)
+                    .target(State.PLAYER_2_WINS_OR_GET_EXTRA_TURN_CHOICE)
+                    .guard(compositeGuard.compose(
+                            compositeGuard.pitExists(),
+                            compositeGuard.pitNotEmpty(),
+                            compositeGuard.isSmallPit()
+                    ))
+                    .action(actions.makeMove())
+                    .event(Event.PLAY)
 
                 .and()
                 .withChoice()
-                .source(State.PLAYER_2_EMPTY_BOARD_CHOICE)
-                .first(State.END, guards.isPlayerBoardEmpty())
-                .last(State.PLAYER_2_GETS_EXTRA_TURN_CHOICE)
+                    .source(State.PLAYER_2_WINS_OR_GET_EXTRA_TURN_CHOICE)
+                    .first(State.END, compositeGuard.isPlayerBoardEmpty())
+                    .then(State.PLAYER_2_TURN, compositeGuard.playerHasExtraTurn())
+                    .last(State.PLAYER_2_END_TURN)
 
                 .and()
-                .withChoice()
-                .source(State.PLAYER_2_GETS_EXTRA_TURN_CHOICE)
-                .first(State.PLAYER_2_TURN, guards.playerHasExtraTurn())
-                .last(State.PLAYER_2_END_TURN)
+                .withExternal()
+                    .source(State.PLAYER_2_END_TURN)
+                    .target(State.PLAYER_1_TURN)
+                    .action(actions.endTurn())
 
                 .and()
-                .withLocal()
-                .source(State.PLAYER_2_END_TURN)
-                .target(State.PLAYER_1_TURN)
-                .action(actions.changeTurn())
+                .withInternal()
+                    .source(State.END)
+                    .action(actions.endGame())
+
         ;
     }
 }

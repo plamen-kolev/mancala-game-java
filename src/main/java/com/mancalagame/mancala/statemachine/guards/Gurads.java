@@ -12,6 +12,9 @@ import org.springframework.statemachine.StateMachineContext;
 import org.springframework.statemachine.guard.Guard;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.function.Function;
+
 @Component
 @Log
 public class Gurads {
@@ -26,6 +29,8 @@ public class Gurads {
 
     public Guard<State, Event> pitNotEmpty() {
         return context -> {
+            log.info("SECOND GUARD LOGGING GUARD LOGGED");
+
             int pitToPlay = getPitId(context);
             boolean pitNotEmpty = !boardService.isPitEmpty(pitToPlay);
             log.info(String.format("Pit not empty: %s, %s", pitToPlay, pitNotEmpty));
@@ -38,10 +43,11 @@ public class Gurads {
     }
 
     public Guard<State, Event> pitExists() {
+        log.info("FIRST GUARD LOGGED");
         return context -> {
             int pitToPlay = getPitId(context);
             boolean pitExists = boardService.doesPitExist(pitToPlay);
-            log.info(String.format("Pit exists: %s", pitExists));
+            log.info(String.format("Pit '%s' exists: %s", pitToPlay, pitExists));
 
             return pitExists;
         };
@@ -49,9 +55,10 @@ public class Gurads {
 
     public Guard<State, Event> isSmallPit() {
         return context -> {
+            log.info("THIRD GUARD LOGGED");
             int pitToPlay = getPitId(context);
             boolean isSmallPit = boardService.isSmallPit(pitToPlay);
-            log.info(String.format("Pit exists: %s", isSmallPit));
+            log.info(String.format("Is '%s' small pit: %s", pitToPlay, isSmallPit));
             return isSmallPit;
         };
     }
@@ -61,6 +68,10 @@ public class Gurads {
         return context -> (boolean) context.getExtendedState().get(HeaderName.EXTRA_TURN, Boolean.class);
     }
 
+    public Guard<State, Event> compose(Guard<State, Event>... guards) {
+        log.info(guards.toString());
+        return context -> Arrays.stream(guards).allMatch(guard -> guard.evaluate(context));
+    }
 
     private int getPitId(StateContext<State, Event> context) {
         return (int) context.getMessage().getHeaders().get(HeaderName.PITID.name());

@@ -49,11 +49,18 @@ public class Actions {
         };
     }
 
-    public Action<State, Event> changeTurn() {
+    public Action<State, Event> endTurn() {
         return context -> {
             Map stateVariables = context.getExtendedState().getVariables();
             Player player = turnService.changeTurn();
             stateVariables.put(HeaderName.TURN, player);
+        };
+    }
+
+    public Action<State, Event> endGame() {
+        return context -> {
+            context.getExtendedState().getVariables()
+                    .put(HeaderName.GAME_STATE, GameState.GAME_WON);
         };
     }
 
