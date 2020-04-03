@@ -51,10 +51,7 @@ public class MancalaGuards {
 
 
     public Guard<State, Event> playerHasExtraTurn() {
-        return context -> {
-            System.out.println("asd");
-            return (boolean) context.getExtendedState().get(HeaderName.EXTRA_TURN, Boolean.class);
-        };
+        return context -> (boolean) context.getExtendedState().get(HeaderName.EXTRA_TURN, Boolean.class);
     }
 
 
