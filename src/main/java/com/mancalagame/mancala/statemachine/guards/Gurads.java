@@ -68,11 +68,6 @@ public class Gurads {
         return context -> (boolean) context.getExtendedState().get(HeaderName.EXTRA_TURN, Boolean.class);
     }
 
-    public Guard<State, Event> compose(Guard<State, Event>... guards) {
-        log.info(guards.toString());
-        return context -> Arrays.stream(guards).allMatch(guard -> guard.evaluate(context));
-    }
-
     private int getPitId(StateContext<State, Event> context) {
         return (int) context.getMessage().getHeaders().get(HeaderName.PITID.name());
     }

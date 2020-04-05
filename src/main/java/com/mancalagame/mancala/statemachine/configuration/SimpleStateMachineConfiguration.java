@@ -6,6 +6,7 @@ import com.mancalagame.mancala.service.BoardService;
 import com.mancalagame.mancala.service.PlayerTurnService;
 import com.mancalagame.mancala.statemachine.actions.Actions;
 import com.mancalagame.mancala.statemachine.events.Event;
+import com.mancalagame.mancala.statemachine.guards.GuardComposer;
 import com.mancalagame.mancala.statemachine.guards.Gurads;
 import com.mancalagame.mancala.statemachine.states.State;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class SimpleStateMachineConfiguration
         extends StateMachineConfigurerAdapter<State, Event> {
 
     private SimpleStateMachineEventListener stateMachineEventListener;
-    private Gurads compositeGuard;
+    private Gurads guards;
     private Actions actions;
     private BoardService boardService;
     private PlayerTurnService turnService;
@@ -39,7 +40,7 @@ public class SimpleStateMachineConfiguration
         this.boardService = boardService;
         this.turnService = turnService;
         this.actions = moveAction;
-        this.compositeGuard = someGuard;
+        this.guards = someGuard;
     }
 
     @Override
@@ -83,10 +84,10 @@ public class SimpleStateMachineConfiguration
                 .withExternal()
                     .source(State.PLAYER_1_TURN)
                     .target(State.PLAYER_1_WINS_OR_GET_EXTRA_TURN_CHOICE)
-                    .guard(compositeGuard.compose(
-                            compositeGuard.pitExists(),
-                            compositeGuard.pitNotEmpty(),
-                            compositeGuard.isSmallPit()
+                    .guard(GuardComposer.compose(
+                            guards.pitExists(),
+                            guards.pitNotEmpty(),
+                            guards.isSmallPit()
                     ))
                     .action(actions.makeMove())
                     .event(Event.PLAY)
@@ -94,8 +95,8 @@ public class SimpleStateMachineConfiguration
                 .and()
                 .withChoice()
                     .source(State.PLAYER_1_WINS_OR_GET_EXTRA_TURN_CHOICE)
-                    .first(State.END, compositeGuard.isPlayerBoardEmpty())
-                    .then(State.PLAYER_1_TURN, compositeGuard.playerHasExtraTurn())
+                    .first(State.END, guards.isPlayerBoardEmpty())
+                    .then(State.PLAYER_1_TURN, guards.playerHasExtraTurn())
                     .last(State.PLAYER_1_END_TURN)
 
                 .and()
@@ -108,10 +109,10 @@ public class SimpleStateMachineConfiguration
                 .withExternal()
                     .source(State.PLAYER_2_TURN)
                     .target(State.PLAYER_2_WINS_OR_GET_EXTRA_TURN_CHOICE)
-                    .guard(compositeGuard.compose(
-                            compositeGuard.pitExists(),
-                            compositeGuard.pitNotEmpty(),
-                            compositeGuard.isSmallPit()
+                    .guard(GuardComposer.compose(
+                            guards.pitExists(),
+                            guards.pitNotEmpty(),
+                            guards.isSmallPit()
                     ))
                     .action(actions.makeMove())
                     .event(Event.PLAY)
@@ -119,8 +120,8 @@ public class SimpleStateMachineConfiguration
                 .and()
                 .withChoice()
                     .source(State.PLAYER_2_WINS_OR_GET_EXTRA_TURN_CHOICE)
-                    .first(State.END, compositeGuard.isPlayerBoardEmpty())
-                    .then(State.PLAYER_2_TURN, compositeGuard.playerHasExtraTurn())
+                    .first(State.END, guards.isPlayerBoardEmpty())
+                    .then(State.PLAYER_2_TURN, guards.playerHasExtraTurn())
                     .last(State.PLAYER_2_END_TURN)
 
                 .and()
